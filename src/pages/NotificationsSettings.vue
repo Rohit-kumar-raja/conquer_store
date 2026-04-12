@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Bell, Mail, Smartphone, MessageSquare, AlertTriangle, TrendingUp, Shield } from 'lucide-vue-next';
 import { SurfaceCard } from '../components';
-import InputSwitch from 'primevue/inputswitch';
+import ToggleButton from 'primevue/togglebutton';
 import { ref } from 'vue';
 
 const settings = ref({
@@ -51,8 +51,8 @@ const settings = ref({
                                     class="w-5 h-5 text-on-surface" />
                             </div>
                             <div>
-                                <p class="text-sm font-bold capitalize text-on-surface">{{ key.replace('instock', 
-                                'Low Stock') }}</p>
+                                <p class="text-sm font-bold capitalize text-on-surface">{{ key.replace('instock',
+                                    'Low Stock') }}</p>
                                 <p class="text-[10px] font-medium text-on-surface-variant uppercase">Critical updates
                                     only</p>
                             </div>

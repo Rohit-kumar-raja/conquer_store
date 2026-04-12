@@ -26,6 +26,18 @@ const showNotification = () => {
         life: 4000
     });
 };
+
+const pageTitles: Record<string, string> = {
+    'profile': 'My Profile',
+    'subscription': 'Subscription',
+    'settings': 'Global Settings',
+    'security': 'Security Center',
+    'notifications-settings': 'Alert Center',
+    'support': 'Support Desk',
+    'menu': 'Management',
+    'add-product': 'New Product',
+    'scanner': 'Universal Scanner'
+};
 </script>
 
 <template>
@@ -53,7 +65,7 @@ const showNotification = () => {
                 <p class="text-[10px] font-medium uppercase tracking-widest text-on-surface-variant">
                     {{ currentScreen === 'dashboard' ? `${shopStore.selectedShop.branch} •
                     ${shopStore.selectedShop.location}` :
-                        'Intelligent Retail Layer' }}
+                        (pageTitles[currentScreen] || 'Intelligent Retail Layer') }}
                 </p>
             </div>
         </div>
