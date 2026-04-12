@@ -28,7 +28,7 @@ const handleLogin = () => {
     <div
         class="min-h-screen bg-surface flex items-center justify-center p-6 bg-[radial-gradient(at_0%_0%,rgba(63,81,181,0.05)_0px,transparent_50%),radial-gradient(at_100%_100%,rgba(36,56,156,0.05)_0px,transparent_50%)]">
         <SurfaceCard variant="lowest"
-            class="w-full max-w-md rounded-[3rem] overflow-hidden shadow-2xl border border-surface-container-high">
+            class="w-full max-w-md rounded-4xl overflow-hidden shadow-2xl border border-surface-container-high">
             <!-- Form -->
             <div class="p-10 flex flex-col justify-center">
                 <div class="flex items-center gap-3 mb-12">
@@ -87,7 +87,7 @@ const handleLogin = () => {
                     </div>
 
                     <div class="flex gap-4">
-                        <Button type="submit" class="flex-[3]" size="xl">
+                        <Button type="submit" class="flex-3" size="xl">
                             <template #icon>
                                 <LogIn class="w-6 h-6" />
                             </template>

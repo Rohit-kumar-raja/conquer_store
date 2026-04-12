@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 import {
     ArrowLeft,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-vue-next';
 import { SurfaceCard, Button, Input } from '../components';
 
+const router = useRouter();
 const emit = defineEmits(['navigate']);
 
 const stock = ref(0);
@@ -21,7 +23,7 @@ const stock = ref(0);
 <template>
     <div class="px-6 pt-6 space-y-8 pb-32">
         <section class="flex items-center gap-4">
-            <button @click="emit('navigate', 'inventory')"
+            <button @click="router.push({ name: 'inventory' })"
                 class="p-2 -ml-2 hover:bg-surface-container-high rounded-full transition-colors">
                 <ArrowLeft class="w-6 h-6 text-primary" />
             </button>
@@ -74,7 +76,7 @@ const stock = ref(0);
                     </template>
                 </Input>
 
-                <div class="bg-surface-container-low p-6 rounded-[2rem] space-y-4">
+                <div class="bg-surface-container-low p-6 rounded-4xl space-y-4">
                     <div class="flex justify-between items-center">
                         <span class="text-sm font-bold text-on-surface">Initial Stock Level</span>
                         <div class="flex items-center gap-4 bg-surface-container-high p-1 rounded-2xl">
@@ -101,10 +103,10 @@ const stock = ref(0);
         <!-- Action Buttons -->
         <div
             class="fixed bottom-0 left-0 right-0 w-full bg-surface/80 backdrop-blur-2xl border-t border-surface-container-high px-6 pb-10 pt-4 z-50 flex gap-4 max-w-md mx-auto">
-            <Button variant="secondary" class="flex-1" @click="emit('navigate', 'inventory')">
+            <Button variant="secondary" class="flex-1" @click="router.push({ name: 'inventory' })">
                 Cancel
             </Button>
-            <Button class="flex-1" @click="emit('navigate', 'inventory')">
+            <Button class="flex-1" @click="router.push({ name: 'inventory' })">
                 <template #icon>
                     <Save class="w-5 h-5" />
                 </template>

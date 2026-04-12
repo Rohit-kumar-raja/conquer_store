@@ -76,7 +76,7 @@ const getOfferBtnClass = (active: boolean) => {
 </script>
 
 <template>
-    <div class="px-6 pt-6 space-y-8">
+    <div class="px-6 pt-6 space-y-8 pb-96">
         <section class="flex items-end justify-between">
             <div>
                 <h2 class="text-3xl font-extrabold tracking-tight text-on-surface leading-tight">Bill</h2>
@@ -178,7 +178,7 @@ const getOfferBtnClass = (active: boolean) => {
                         <span class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Total
                             Payable</span>
                         <span class="text-3xl font-extrabold text-on-surface tracking-tighter">{{ formatCurrency(total)
-                            }}</span>
+                        }}</span>
                     </div>
                 </div>
                 <Button class="w-full" size="xl">

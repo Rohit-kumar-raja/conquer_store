@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { TrendingUp, DollarSign, Package, Zap } from 'lucide-vue-next';
 import { StatCard, SurfaceCard } from '../components';
 
+const router = useRouter();
 const emit = defineEmits(['navigate']);
 
 const data = [
@@ -51,7 +53,7 @@ onMounted(() => {
                 </template>
             </StatCard>
 
-            <SurfaceCard class="primary-gradient p-6 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
+            <SurfaceCard class="primary-gradient p-6 rounded-4xl text-white shadow-xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 p-4 opacity-10">
                     <Zap class="w-24 h-24" />
                 </div>
