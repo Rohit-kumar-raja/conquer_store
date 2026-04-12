@@ -12,7 +12,7 @@ import {
     Zap,
     Eye
 } from 'lucide-vue-next';
-import { Input, Button, SurfaceCard } from './ui';
+import { Input, Button, SurfaceCard } from '../components';
 
 const emit = defineEmits(['login']);
 

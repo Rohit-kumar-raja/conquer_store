@@ -11,7 +11,7 @@ import {
     Plus,
     Minus
 } from 'lucide-vue-next';
-import { SurfaceCard, Button, Input } from './ui';
+import { SurfaceCard, Button, Input } from '../components';
 
 const emit = defineEmits(['navigate']);
 

@@ -9,7 +9,7 @@ import {
     TrendingUp,
     IndianRupee
 } from 'lucide-vue-next';
-import { SurfaceCard, IntelligenceBadge, Button } from './ui';
+import { SurfaceCard, IntelligenceBadge, Button } from '../components';
 import { cn } from '../lib/utils';
 
 const emit = defineEmits(['navigate']);

@@ -9,7 +9,7 @@ import {
     Plus
 } from 'lucide-vue-next';
 import { cn } from '../lib/utils';
-import { SurfaceCard } from './ui';
+import { SurfaceCard } from '../components';
 
 const emit = defineEmits(['navigate']);
 

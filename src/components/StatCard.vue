@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TrendingUp, TrendingDown } from 'lucide-vue-next';
-import { cn } from '../../lib/utils';
+import { cn } from '../lib/utils';
 import SurfaceCard from './SurfaceCard.vue';
 import { useAttrs } from 'vue';
 

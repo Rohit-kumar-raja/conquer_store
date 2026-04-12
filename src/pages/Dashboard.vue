@@ -5,7 +5,7 @@ import {
     ArrowRight,
     Zap
 } from 'lucide-vue-next';
-import { StatCard, StockItem, Button } from './ui';
+import { StatCard, StockItem, Button } from '../components';
 
 const emit = defineEmits(['navigate']);
 </script>

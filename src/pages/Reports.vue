@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { TrendingUp, DollarSign, Package, Zap } from 'lucide-vue-next';
-import { StatCard, SurfaceCard } from './ui';
+import { StatCard, SurfaceCard } from '../components';
 
 const emit = defineEmits(['navigate']);
 

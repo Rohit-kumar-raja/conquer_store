@@ -8,7 +8,7 @@ import {
     ArrowLeft
 } from 'lucide-vue-next';
 import { cn } from '../lib/utils';
-import { ScannerView, SurfaceCard, Button } from './ui';
+import { ScannerView, SurfaceCard, Button } from '../components';
 
 const emit = defineEmits(['navigate']);
 

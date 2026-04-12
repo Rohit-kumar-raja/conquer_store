@@ -1,13 +1,60 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
 import {
     Plus,
     Ticket,
     CreditCard,
     Scan
 } from 'lucide-vue-next';
-import { StockItem, SurfaceCard, Button } from './ui';
+import { StockItem, SurfaceCard, Button } from '../components';
 
 const emit = defineEmits(['navigate']);
+
+const items = ref([
+    {
+        id: 1,
+        name: "Studio Pro Wireless",
+        sku: "HD-900",
+        price: 12499.00,
+        qty: 1,
+        image: "https://picsum.photos/seed/audio/200/200"
+    },
+    {
+        id: 2,
+        name: "Lunar Edition X",
+        sku: "WT-42",
+        price: 8950.00,
+        qty: 2,
+        image: "https://picsum.photos/seed/watch2/200/200"
+    },
+    {
+        id: 3,
+        name: 'UltraTab 12.9"',
+        sku: "TB-12P",
+        price: 44200.00,
+        qty: 1,
+        image: "https://picsum.photos/seed/tablet/200/200"
+    }
+]);
+
+const updateQty = (id: number, newQty: number) => {
+    const item = items.value.find(i => i.id === id);
+    if (item) {
+        item.qty = newQty;
+    }
+};
+
+const removeItem = (id: number) => {
+    items.value = items.value.filter(i => i.id !== id);
+};
+
+const formatCurrency = (val: number) => {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(val);
+};
+
+const subtotal = computed(() => items.value.reduce((acc, item) => acc + item.price * item.qty, 0));
+const gst = computed(() => subtotal.value * 0.18);
+const total = computed(() => subtotal.value + gst.value);
 
 const getOfferClass = (active: boolean) => {
     return active
@@ -40,17 +87,14 @@ const getOfferBtnClass = (active: boolean) => {
         </section>
 
         <div class="grid grid-cols-1 gap-4">
-            <StockItem variant="bill" name="Studio Pro Wireless" sku="HD-900" price="₹12,499.00" :qty="1"
-                image="https://picsum.photos/seed/audio/200/200" @click="emit('navigate', 'product-detail')"
-                @qtyChange="() => { }" @remove="() => { }" />
-            <StockItem variant="bill" name="Lunar Edition X" sku="WT-42" price="₹8,950.00" :qty="2" total="₹17,900.00"
-                image="https://picsum.photos/seed/watch2/200/200" @qtyChange="() => { }" @remove="() => { }" />
-            <StockItem variant="bill" name='UltraTab 12.9"' sku="TB-12P" price="₹44,200.00" :qty="1"
-                image="https://picsum.photos/seed/tablet/200/200" @qtyChange="() => { }" @remove="() => { }" />
+            <StockItem v-for="item in items" :key="item.id" variant="bill" :name="item.name" :sku="item.sku"
+                :price="formatCurrency(item.price)" :qty="item.qty" :total="formatCurrency(item.price * item.qty)"
+                :image="item.image" @click="item.id === 1 ? emit('navigate', 'product-detail') : null"
+                @qtyChange="(newQty) => updateQty(item.id, newQty)" @remove="() => removeItem(item.id)" />
 
             <!-- Scan More Placeholder -->
             <div @click="emit('navigate', 'scanner')"
-                class="bg-surface-container rounded-[2rem] border-2 border-dashed border-surface-container-highest flex flex-col items-center justify-center p-8 text-center min-h-[180px] transition-all duration-300 cursor-pointer group hover:scale-[1.02] hover:bg-surface-container-high hover:border-primary active:scale-[0.98]">
+                class="bg-surface-container rounded-4xl border-2 border-dashed border-surface-container-highest flex flex-col items-center justify-center p-8 text-center min-h-[180px] transition-all duration-300 cursor-pointer group hover:scale-[1.02] hover:bg-surface-container-high hover:border-primary active:scale-[0.98]">
                 <div class="flex gap-3 mb-3">
                     <div
                         class="w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">
@@ -119,18 +163,19 @@ const getOfferBtnClass = (active: boolean) => {
                         <div class="flex justify-between items-center">
                             <span
                                 class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Subtotal</span>
-                            <span class="font-bold text-on-surface">₹74,599.00</span>
+                            <span class="font-bold text-on-surface">{{ formatCurrency(subtotal) }}</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">GST
                                 (18%)</span>
-                            <span class="font-bold text-on-surface">₹13,427.82</span>
+                            <span class="font-bold text-on-surface">{{ formatCurrency(gst) }}</span>
                         </div>
                     </div>
                     <div class="flex flex-col items-end justify-center border-l border-surface-container-high pl-8">
                         <span class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Total
                             Payable</span>
-                        <span class="text-3xl font-extrabold text-on-surface tracking-tighter">₹88,026.82</span>
+                        <span class="text-3xl font-extrabold text-on-surface tracking-tighter">{{ formatCurrency(total)
+                        }}</span>
                     </div>
                 </div>
                 <Button class="w-full" size="xl">
