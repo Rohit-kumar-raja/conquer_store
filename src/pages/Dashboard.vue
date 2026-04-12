@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router';
 import {
     TrendingUp,
     AlertTriangle,
@@ -7,6 +8,7 @@ import {
 } from 'lucide-vue-next';
 import { StatCard, StockItem, Button } from '../components';
 
+const router = useRouter();
 const emit = defineEmits(['navigate']);
 </script>
 
@@ -43,7 +45,7 @@ const emit = defineEmits(['navigate']);
                 <div class="space-y-3">
                     <StockItem name="Premium Wireless Headphones" sku="WH-1000-XM5" :stock="2" :reorder="5"
                         image="https://picsum.photos/seed/headphones/200/200"
-                        @click="emit('navigate', 'product-detail')" />
+                        @click="router.push({ name: 'product-detail', params: { id: 'WH-1000-XM5' } })" />
                     <StockItem name="Titanium Sport Watch" sku="SW-TI-44" :stock="1" :reorder="10"
                         image="https://picsum.photos/seed/watch/200/200" />
                     <StockItem name="Universal Fast Charger" sku="PW-65W-GAN" :stock="0" :reorder="15"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router';
 import {
     Maximize2,
     ShoppingCart,
@@ -10,6 +11,7 @@ import {
 import { cn } from '../lib/utils';
 import { ScannerView, SurfaceCard, Button } from '../components';
 
+const router = useRouter();
 const emit = defineEmits(['navigate']);
 
 const getOuterClass = (variant: string) => {
@@ -33,7 +35,7 @@ const getIconClass = (variant: string) => {
     <div class="min-h-screen flex flex-col">
         <!-- Header with Back Button -->
         <div class="px-6 pt-4 flex items-center gap-4">
-            <button @click="emit('navigate', 'bill')"
+            <button @click="router.push({ name: 'bill' })"
                 class="p-2 -ml-2 hover:bg-surface-container-high rounded-full transition-colors text-primary">
                 <ArrowLeft class="w-6 h-6" />
             </button>

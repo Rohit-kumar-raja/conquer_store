@@ -29,7 +29,7 @@ const attrs = useAttrs();
 <template>
     <div @click="(e) => emit('click', e)" v-bind="(() => { const { class: _, ...rest } = attrs; return rest; })()"
         :class="cn(
-            'bg-surface-container-lowest p-4 rounded-[2rem] flex flex-col gap-4 group hover:bg-surface-container-low transition-all active:scale-[0.98] cursor-pointer border-l-4',
+            'bg-surface-container-lowest p-4 rounded-4xl flex flex-col gap-4 group hover:bg-surface-container-low transition-all active:scale-[0.98] cursor-pointer border-l-4',
             props.isOutOfStock ? 'border-error' : 'border-transparent',
             props.variant === 'bill' && 'border-surface-container-high',
             attrs.class as string
@@ -52,7 +52,7 @@ const attrs = useAttrs();
         </div>
 
         <div class="flex items-center justify-between">
-            <div v-if="props.variant === 'bill' && (attrs.onQtyChange || $attrs.onQtyChange)"
+            <div v-if="props.variant === 'bill'"
                 class="flex items-center gap-1 bg-surface-container-high p-1 rounded-2xl">
                 <button @click.stop="emit('qtyChange', Math.max(0, (qty || 0) - 1))"
                     class="w-8 h-8 rounded-xl bg-surface-container-lowest flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">

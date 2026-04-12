@@ -1,98 +1,99 @@
-<script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import {
-    Search,
-    Filter,
-    ChevronDown,
-    Edit3,
-    AlertCircle,
-    Plus
+Search,
+Filter,
+ChevronDown,
+Edit3,
+AlertCircle,
+Plus
 } from 'lucide-vue-next';
 import { cn } from '../lib/utils';
 import { SurfaceCard } from '../components';
 
+const router = useRouter();
 const emit = defineEmits(['navigate']);
 
 interface StockItem {
-    id: string;
-    name: string;
-    sku: string;
-    image: string;
-    stock: number;
-    maxStock: number;
-    category: string;
-    status: 'critical' | 'healthy' | 'out' | 'attention';
+id: string;
+name: string;
+sku: string;
+image: string;
+stock: number;
+maxStock: number;
+category: string;
+status: 'critical' | 'healthy' | 'out' | 'attention';
 }
 
 const stockData: StockItem[] = [
-    {
-        id: '1',
-        name: 'Quantum Pulse X1',
-        sku: 'QPX-2024-RED',
-        image: 'https://picsum.photos/seed/shoe1/200/200',
-        stock: 12,
-        maxStock: 150,
-        category: 'Footwear',
-        status: 'critical'
-    },
-    {
-        id: '2',
-        name: 'Aura Chronos Smart',
-        sku: 'AUR-WCH-SLV',
-        image: 'https://picsum.photos/seed/watch1/200/200',
-        stock: 412,
-        maxStock: 500,
-        category: 'Electronics',
-        status: 'healthy'
-    },
-    {
-        id: '3',
-        name: 'Sonic Boom ANC',
-        sku: 'SNB-HD-BLK',
-        image: 'https://picsum.photos/seed/audio1/200/200',
-        stock: 0,
-        maxStock: 200,
-        category: 'Audio',
-        status: 'out'
-    },
-    {
-        id: '4',
-        name: 'Vortex Prime 85mm',
-        sku: 'VTX-LNS-85',
-        image: 'https://picsum.photos/seed/camera1/200/200',
-        stock: 45,
-        maxStock: 100,
-        category: 'Imaging',
-        status: 'attention'
-    }
+{
+id: '1',
+name: 'Quantum Pulse X1',
+sku: 'QPX-2024-RED',
+image: 'https://picsum.photos/seed/shoe1/200/200',
+stock: 12,
+maxStock: 150,
+category: 'Footwear',
+status: 'critical'
+},
+{
+id: '2',
+name: 'Aura Chronos Smart',
+sku: 'AUR-WCH-SLV',
+image: 'https://picsum.photos/seed/watch1/200/200',
+stock: 412,
+maxStock: 500,
+category: 'Electronics',
+status: 'healthy'
+},
+{
+id: '3',
+name: 'Sonic Boom ANC',
+sku: 'SNB-HD-BLK',
+image: 'https://picsum.photos/seed/audio1/200/200',
+stock: 0,
+maxStock: 200,
+category: 'Audio',
+status: 'out'
+},
+{
+id: '4',
+name: 'Vortex Prime 85mm',
+sku: 'VTX-LNS-85',
+image: 'https://picsum.photos/seed/camera1/200/200',
+stock: 45,
+maxStock: 100,
+category: 'Imaging',
+status: 'attention'
+}
 ];
 
 const statusConfig = {
-    critical: { label: 'CRITICAL STOCK', color: 'text-error', bar: 'bg-error' },
-    healthy: { label: 'HEALTHY STOCK', color: 'text-primary', bar: 'bg-primary' },
-    out: { label: 'OUT OF STOCK', color: 'text-error', bar: 'bg-error/20' },
-    attention: { label: 'ATTENTION REQUIRED', color: 'text-tertiary', bar: 'bg-tertiary' }
+critical: { label: 'CRITICAL STOCK', color: 'text-error', bar: 'bg-error' },
+healthy: { label: 'HEALTHY STOCK', color: 'text-primary', bar: 'bg-primary' },
+out: { label: 'OUT OF STOCK', color: 'text-error', bar: 'bg-error/20' },
+attention: { label: 'ATTENTION REQUIRED', color: 'text-tertiary', bar: 'bg-tertiary' }
 };
 
 const getProgress = (stock: number, maxStock: number) => {
-    return (stock / maxStock) * 100;
+return (stock / maxStock) * 100;
 };
 
 // For initial mount animation
 const showProgress = ref(false);
 onMounted(() => {
-    setTimeout(() => {
-        showProgress.value = true;
-    }, 100);
+setTimeout(() => {
+showProgress.value = true;
+}, 100);
 });
 
 const getFilterClass = (active?: boolean) => {
-    return cn(
-        "shrink-0 px-5 py-2.5 rounded-2xl font-bold text-xs tracking-tight flex items-center gap-2 transition-all",
-        active
-            ? "bg-primary text-white shadow-lg shadow-primary/20"
-            : "bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest"
-    );
+return cn(
+"shrink-0 px-5 py-2.5 rounded-2xl font-bold text-xs tracking-tight flex items-center gap-2 transition-all",
+active
+? "bg-primary text-white shadow-lg shadow-primary/20"
+: "bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest"
+);
 };
 </script>
 
@@ -125,7 +126,8 @@ const getFilterClass = (active?: boolean) => {
 
         <!-- Stock List -->
         <div class="space-y-4">
-            <SurfaceCard v-for="item in stockData" :key="item.id" @click="emit('navigate', 'product-detail')"
+            <SurfaceCard v-for="item in stockData" :key="item.id"
+                @click="router.push({ name: 'product-detail', params: { id: item.id } })"
                 class="p-5 flex flex-col gap-5 hover:scale-[1.02] cursor-pointer">
                 <div class="flex gap-4 items-center">
                     <div class="w-16 h-16 rounded-2xl overflow-hidden bg-surface-container shrink-0">
@@ -171,7 +173,7 @@ const getFilterClass = (active?: boolean) => {
         </div>
 
         <!-- Floating Action Button -->
-        <button @click="emit('navigate', 'add-product')"
+        <button @click="router.push({ name: 'add-product' })"
             class="fixed bottom-32 right-6 w-16 h-16 rounded-3xl bg-primary text-white shadow-2xl shadow-primary/40 flex items-center justify-center z-50 hover:scale-105 active:scale-95 transition-transform">
             <Plus class="w-8 h-8" />
         </button>

@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router';
 import { ref, computed } from 'vue';
+
+const router = useRouter();
 import {
     Plus,
     Ticket,
@@ -8,7 +11,6 @@ import {
 } from 'lucide-vue-next';
 import { StockItem, SurfaceCard, Button } from '../components';
 
-const emit = defineEmits(['navigate']);
 
 const items = ref([
     {
@@ -89,11 +91,12 @@ const getOfferBtnClass = (active: boolean) => {
         <div class="grid grid-cols-1 gap-4">
             <StockItem v-for="item in items" :key="item.id" variant="bill" :name="item.name" :sku="item.sku"
                 :price="formatCurrency(item.price)" :qty="item.qty" :total="formatCurrency(item.price * item.qty)"
-                :image="item.image" @click="item.id === 1 ? emit('navigate', 'product-detail') : null"
+                :image="item.image"
+                @click="item.id === 1 ? router.push({ name: 'product-detail', params: { id: item.sku } }) : null"
                 @qtyChange="(newQty) => updateQty(item.id, newQty)" @remove="() => removeItem(item.id)" />
 
             <!-- Scan More Placeholder -->
-            <div @click="emit('navigate', 'scanner')"
+            <div @click="router.push({ name: 'scanner' })"
                 class="bg-surface-container rounded-4xl border-2 border-dashed border-surface-container-highest flex flex-col items-center justify-center p-8 text-center min-h-[180px] transition-all duration-300 cursor-pointer group hover:scale-[1.02] hover:bg-surface-container-high hover:border-primary active:scale-[0.98]">
                 <div class="flex gap-3 mb-3">
                     <div
@@ -175,7 +178,7 @@ const getOfferBtnClass = (active: boolean) => {
                         <span class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Total
                             Payable</span>
                         <span class="text-3xl font-extrabold text-on-surface tracking-tighter">{{ formatCurrency(total)
-                        }}</span>
+                            }}</span>
                     </div>
                 </div>
                 <Button class="w-full" size="xl">
