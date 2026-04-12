@@ -4,17 +4,17 @@ import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import {
     Bell,
-    History,
     ArrowLeft,
     Share2,
-    ChevronDown
+    ChevronDown,
+    MoreVertical
 } from 'lucide-vue-next';
-import { useStoreManager } from '../composables/useStoreManager';
+import { useShopStore } from '../stores/useShopStore';
 
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
-const { selectedStore, toggleStoreSwitcher } = useStoreManager();
+const shopStore = useShopStore();
 
 const currentScreen = computed(() => route.name as string || 'dashboard');
 
@@ -32,8 +32,9 @@ const showNotification = () => {
     <header
         class="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-surface-container-high px-6 py-4 flex justify-between items-center max-w-md mx-auto w-full">
         <div class="flex items-center gap-3">
-            <button v-if="currentScreen === 'product-detail' || currentScreen === 'scanner'" @click="router.back()"
-                class="p-2 -ml-2 hover:bg-surface-container-high rounded-full transition-colors">
+            <button
+                v-if="currentScreen !== 'dashboard' && currentScreen !== 'bill' && currentScreen !== 'inventory' && currentScreen !== 'reports'"
+                @click="router.back()" class="p-2 -ml-2 hover:bg-surface-container-high rounded-full transition-colors">
                 <ArrowLeft class="w-5 h-5 text-primary" />
             </button>
             <div v-else
@@ -42,16 +43,17 @@ const showNotification = () => {
                     alt="Profile" class="w-full h-full object-cover" />
             </div>
 
-            <div @click="toggleStoreSwitcher" class="flex flex-col cursor-pointer group">
+            <div @click="shopStore.toggleSwitcher" class="flex flex-col cursor-pointer group">
                 <div class="flex items-center gap-1">
                     <h1
                         class="text-lg font-extrabold text-on-surface leading-tight group-hover:text-primary transition-colors">
-                        {{ selectedStore.name }}</h1>
+                        {{ shopStore.selectedShop.name }}</h1>
                     <ChevronDown class="w-4 h-4 text-on-surface-variant group-hover:text-primary transition-colors" />
                 </div>
                 <p class="text-[10px] font-medium uppercase tracking-widest text-on-surface-variant">
-                    {{ currentScreen === 'dashboard' ? `${selectedStore.branch} • ${selectedStore.location}` :
-                    'Intelligent Retail Layer' }}
+                    {{ currentScreen === 'dashboard' ? `${shopStore.selectedShop.branch} •
+                    ${shopStore.selectedShop.location}` :
+                        'Intelligent Retail Layer' }}
                 </p>
             </div>
         </div>
@@ -67,9 +69,9 @@ const showNotification = () => {
                 <span
                     class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface animate-pulse" />
             </button>
-            <button v-if="currentScreen === 'dashboard'"
+            <button @click="router.push({ name: 'menu' })"
                 class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-primary">
-                <History class="w-5 h-5" />
+                <MoreVertical class="w-5 h-5" />
             </button>
         </div>
     </header>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import Dialog from 'primevue/dialog';
 import { Store as StoreIcon, Plus, Check } from 'lucide-vue-next';
-import { useStoreManager } from '../composables/useStoreManager';
+import { useShopStore } from '../stores/useShopStore';
 
-const { stores, selectedStore, showStoreSwitcher, switchStore } = useStoreManager();
+const shopStore = useShopStore();
 </script>
 
 <template>
-    <Dialog v-model:visible="showStoreSwitcher" modal header="Switch Store" :draggable="false"
+    <Dialog v-model:visible="shopStore.isSwitcherOpen" modal header="Switch Store" :draggable="false"
         class="w-[90%] max-w-sm mx-4" :pt="{
             root: { class: 'rounded-4xl border-none shadow-2xl bg-surface' },
             header: { class: 'p-6 pb-2 text-2xl font-black text-on-surface' },
@@ -15,16 +15,16 @@ const { stores, selectedStore, showStoreSwitcher, switchStore } = useStoreManage
             mask: { class: 'backdrop-blur-md bg-on-surface/5' }
         }">
         <div class="space-y-4">
-            <div v-for="store in stores" :key="store.id" @click="switchStore(store)" :class="[
+            <div v-for="store in shopStore.shops" :key="store.id" @click="shopStore.switchShop(store)" :class="[
                 'p-4 rounded-3xl border transition-all cursor-pointer flex items-center justify-between group',
-                selectedStore.id === store.id
+                shopStore.selectedShop.id === store.id
                     ? 'bg-primary/5 border-primary shadow-sm'
                     : 'bg-surface-container-low border-transparent hover:bg-surface-container-high'
             ]">
                 <div class="flex items-center gap-4">
                     <div :class="[
                         'w-12 h-12 rounded-2xl flex items-center justify-center transition-colors',
-                        selectedStore.id === store.id ? 'bg-primary text-white' : 'bg-surface-container-highest text-on-surface-variant group-hover:bg-primary-container group-hover:text-primary'
+                        shopStore.selectedShop.id === store.id ? 'bg-primary text-white' : 'bg-surface-container-highest text-on-surface-variant group-hover:bg-primary-container group-hover:text-primary'
                     ]">
                         <StoreIcon class="w-6 h-6" />
                     </div>
@@ -34,7 +34,7 @@ const { stores, selectedStore, showStoreSwitcher, switchStore } = useStoreManage
                         </p>
                     </div>
                 </div>
-                <div v-if="selectedStore.id === store.id"
+                <div v-if="shopStore.selectedShop.id === store.id"
                     class="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                     <Check class="w-4 h-4 text-white" stroke-width="4" />
                 </div>
