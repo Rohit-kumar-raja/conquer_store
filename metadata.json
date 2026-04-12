@@ -1,0 +1,7 @@
+{
+  "name": "Predictive Surface",
+  "description": "An AI-driven retail analytics and inventory management platform with predictive insights.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
