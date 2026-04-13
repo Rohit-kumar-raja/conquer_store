@@ -178,7 +178,7 @@ const getOfferBtnClass = (active: boolean) => {
                         <span class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Total
                             Payable</span>
                         <span class="text-3xl font-extrabold text-on-surface tracking-tighter">{{ formatCurrency(total)
-                        }}</span>
+                            }}</span>
                     </div>
                 </div>
                 <Button class="w-full" size="xl">

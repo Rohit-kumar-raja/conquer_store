@@ -16,42 +16,37 @@ const currentScreen = computed(() => route.name as string || 'dashboard');
 const navigateTo = (screen: string) => {
     router.push({ name: screen });
 };
+
+const navItems = [
+    { id: 'dashboard', icon: LayoutDashboard, label: 'HUB' },
+    { id: 'bill', icon: QrCode, label: 'SCAN' },
+    { id: 'inventory', icon: Package, label: 'STOCK' },
+    { id: 'reports', icon: BarChart3, label: 'DATA' }
+];
 </script>
 
 <template>
     <nav
-        class="fixed bottom-0 left-0 right-0 w-full z-50 px-4 sm:px-6 pb-[calc(env(safe-area-inset-bottom,0px)+1.5rem)] pt-4 max-w-md mx-auto">
-        <div class="glass-panel rounded-3xl shadow-2xl shadow-on-surface/5 flex justify-between items-center p-1.5">
-            <button @click="navigateTo('dashboard')" :class="[
-                'flex-1 flex flex-col items-center justify-center py-2.5 rounded-2xl transition-all duration-300',
-                currentScreen === 'dashboard' ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' : 'text-on-surface-variant hover:text-primary'
+        class="fixed bottom-0 left-0 right-0 w-full z-50 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] pt-1 max-w-md mx-auto">
+        <div
+            class="bg-surface/90 backdrop-blur-3xl rounded-4xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-white/20 flex justify-between items-center p-1.5">
+            <button v-for="item in navItems" :key="item.id" @click="navigateTo(item.id)" :class="[
+                'flex-1 flex flex-col items-center justify-center py-2.5 rounded-3xl transition-all duration-300 relative group',
+                currentScreen === item.id ? 'text-primary' : 'text-on-surface-variant/40 hover:text-on-surface-variant'
             ]">
-                <LayoutDashboard class="w-5 h-5" />
-                <span class="text-[10px] font-bold uppercase tracking-wider mt-1">Dashboard</span>
-            </button>
+                <!-- Active Indicator Pill -->
+                <div v-if="currentScreen === item.id"
+                    class="absolute inset-0 bg-primary/5 rounded-3xl transition-all duration-500 scale-95"></div>
 
-            <button @click="navigateTo('bill')" :class="[
-                'flex-1 flex flex-col items-center justify-center py-2.5 rounded-2xl transition-all duration-300',
-                currentScreen === 'bill' ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' : 'text-on-surface-variant hover:text-primary'
-            ]">
-                <QrCode class="w-5 h-5" />
-                <span class="text-[10px] font-bold uppercase tracking-wider mt-1">Bill</span>
-            </button>
+                <component :is="item.icon"
+                    :class="['w-6 h-6 mb-1 transition-transform group-active:scale-90', currentScreen === item.id ? 'stroke-[2.5px]' : 'stroke-[2px]']" />
+                <span
+                    :class="['text-[9px] font-black uppercase tracking-[0.2em]', currentScreen === item.id ? 'opacity-100' : 'opacity-40']">{{
+                        item.label }}</span>
 
-            <button @click="navigateTo('inventory')" :class="[
-                'flex-1 flex flex-col items-center justify-center py-2.5 rounded-2xl transition-all duration-300',
-                currentScreen === 'inventory' ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' : 'text-on-surface-variant hover:text-primary'
-            ]">
-                <Package class="w-5 h-5" />
-                <span class="text-[10px] font-bold uppercase tracking-wider mt-1">Stock</span>
-            </button>
-
-            <button @click="navigateTo('reports')" :class="[
-                'flex-1 flex flex-col items-center justify-center py-2.5 rounded-2xl transition-all duration-300',
-                currentScreen === 'reports' ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' : 'text-on-surface-variant hover:text-primary'
-            ]">
-                <BarChart3 class="w-5 h-5" />
-                <span class="text-[10px] font-bold uppercase tracking-wider mt-1">Reports</span>
+                <!-- Active Dot -->
+                <div v-if="currentScreen === item.id" class="w-1 h-1 bg-primary rounded-full mt-1.5 animate-bounce">
+                </div>
             </button>
         </div>
     </nav>

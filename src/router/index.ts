@@ -15,11 +15,11 @@ const routes = [
         ]
     },
     {
-        path: '/',
+        path: '',
         component: AuthenticatedLayout,
         children: [
             {
-                path: '/dashboard',
+                path: '',
                 component: () => import('../pages/Dashboard.vue'),
                 name: 'dashboard'
             },

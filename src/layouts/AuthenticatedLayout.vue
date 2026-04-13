@@ -8,7 +8,7 @@ import TheBottomNav from '../components/TheBottomNav.vue';
         <TheHeader />
 
         <!-- Main Content -->
-        <main class="grow pb-32 max-w-md mx-auto w-full">
+        <main class="grow pb-24 max-w-md mx-auto w-full">
             <router-view v-slot="{ Component }">
                 <transition name="fade-slide" mode="out-in">
                     <component :is="Component" />

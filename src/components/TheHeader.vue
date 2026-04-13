@@ -18,72 +18,70 @@ const shopStore = useShopStore();
 
 const currentScreen = computed(() => route.name as string || 'dashboard');
 
-const showNotification = () => {
-    toast.add({
-        severity: 'info',
-        summary: 'Predictive Alert',
-        detail: 'Studio Pro Wireless demand is expected to surge by 15% this weekend.',
-        life: 4000
-    });
+const pageTitles: Record<string, string> = {
+    'profile': 'Account',
+    'subscription': 'Billing',
+    'settings': 'Preferences',
+    'security': 'Protection',
+    'notifications-settings': 'Alert Hub',
+    'support': 'Concierge',
+    'menu': 'System',
+    'notifications': 'Pulses',
+    'add-product': 'Inventory',
+    'scanner': 'Optic Scan'
 };
 
-const pageTitles: Record<string, string> = {
-    'profile': 'My Profile',
-    'subscription': 'Subscription',
-    'settings': 'Global Settings',
-    'security': 'Security Center',
-    'notifications-settings': 'Alert Center',
-    'support': 'Support Desk',
-    'menu': 'Management',
-    'notifications': 'Intelligence Pulses',
-    'add-product': 'New Product',
-    'scanner': 'Universal Scanner'
-};
+const isMainScreen = computed(() =>
+    ['dashboard', 'bill', 'inventory', 'reports'].includes(currentScreen.value)
+);
 </script>
 
 <template>
     <header
-        class="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-surface-container-high px-6 py-4 flex justify-between items-center max-w-md mx-auto w-full">
-        <div class="flex items-center gap-3">
-            <button
-                v-if="currentScreen !== 'dashboard' && currentScreen !== 'bill' && currentScreen !== 'inventory' && currentScreen !== 'reports'"
-                @click="router.back()" class="p-2 -ml-2 hover:bg-surface-container-high rounded-full transition-colors">
+        class="sticky top-0 z-50 bg-surface/80 backdrop-blur-3xl px-6 py-3 flex justify-between items-center max-w-md mx-auto w-full transition-all duration-500">
+        <div class="flex items-center gap-4">
+            <!-- Dynamic Left Action -->
+            <button v-if="!isMainScreen" @click="router.back()"
+                class="w-10 h-10 flex items-center justify-center bg-surface-container-high rounded-2xl active:scale-95 transition-all">
                 <ArrowLeft class="w-5 h-5 text-primary" />
             </button>
+
             <div v-else
-                class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center overflow-hidden border border-surface-container-highest">
-                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBif5fpPe2EEqcu1ZbteVYNAjet40-NQX_9ALU7bOEoVni_wOLgEGq_y0CJe3MNfL2hRmEYipcFLWOuMQ0rejCioXBghLEXIihmEqtGwntNvoT5d6g2CXCWpio-h7vlr0bEiYLz4OJ-u6AR8yughIppTKA9RL3VWkkeCINs9vUhzN3x99cxP90I6AKowti-_xTGW6rWtdaNaiRjO6S4HVzcvNTWdz_w7No0jl1r5dHW8APEHcc4HJJv2QLj_u62NoxmmXCCHuwZ"
+                class="w-10 h-10 rounded-2xl bg-primary-container flex items-center justify-center overflow-hidden border-2 border-surface-container-highest shadow-sm">
+                <img src="https://lh3.googleusercontent.com/fife/AL65B2LzFwI_W7z1H1I0_VvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvV"
                     alt="Profile" class="w-full h-full object-cover" />
             </div>
 
+            <!-- Contextual Branding -->
             <div @click="shopStore.toggleSwitcher" class="flex flex-col cursor-pointer group">
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-1.5">
                     <h1
-                        class="text-lg font-extrabold text-on-surface leading-tight group-hover:text-primary transition-colors">
-                        {{ shopStore.selectedShop.name }}</h1>
-                    <ChevronDown class="w-4 h-4 text-on-surface-variant group-hover:text-primary transition-colors" />
+                        class="text-base font-black text-on-surface leading-tight tracking-tight group-hover:text-primary transition-all">
+                        {{ isMainScreen ? shopStore.selectedShop.name : (pageTitles[currentScreen] || 'Layer') }}
+                    </h1>
+                    <ChevronDown v-if="isMainScreen"
+                        class="w-3.5 h-3.5 text-on-surface-variant group-hover:translate-y-0.5 transition-transform" />
                 </div>
-                <p class="text-[10px] font-medium uppercase tracking-widest text-on-surface-variant">
-                    {{ currentScreen === 'dashboard' ? `${shopStore.selectedShop.branch} •
-                    ${shopStore.selectedShop.location}` :
-                        (pageTitles[currentScreen] || 'Intelligent Retail Layer') }}
+                <p class="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">
+                    {{ isMainScreen ? shopStore.selectedShop.branch : 'Operational Mode' }}
                 </p>
             </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <!-- Right Side Actions -->
+        <div class="flex items-center gap-1.5">
             <button v-if="currentScreen === 'product-detail'"
-                class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant">
+                class="w-10 h-10 flex items-center justify-center bg-surface-container-low rounded-2xl text-on-surface-variant active:scale-95 transition-all">
                 <Share2 class="w-5 h-5" />
             </button>
             <button @click="router.push({ name: 'notifications' })"
-                class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-primary relative">
+                class="w-10 h-10 flex items-center justify-center bg-surface-container-low rounded-2xl text-primary relative active:scale-95 transition-all">
                 <Bell class="w-5 h-5" />
                 <span
-                    class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface animate-pulse" />
+                    class="absolute top-2.5 right-2.5 w-2 h-2 bg-error rounded-full border-2 border-surface shadow-sm" />
             </button>
             <button @click="router.push({ name: 'menu' })"
-                class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-primary">
+                class="w-10 h-10 flex items-center justify-center bg-surface-container-low rounded-2xl text-on-surface hover:bg-surface-container-high active:scale-95 transition-all">
                 <MoreVertical class="w-5 h-5" />
             </button>
         </div>
