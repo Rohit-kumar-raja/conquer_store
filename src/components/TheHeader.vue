@@ -47,9 +47,13 @@ const isMainScreen = computed(() =>
             </button>
 
             <div v-else
-                class="w-10 h-10 rounded-2xl bg-primary-container flex items-center justify-center overflow-hidden border-2 border-surface-container-highest shadow-sm">
-                <img src="https://lh3.googleusercontent.com/fife/AL65B2LzFwI_W7z1H1I0_VvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvVvV"
-                    alt="Profile" class="w-full h-full object-cover" />
+                class="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden border-2 border-surface-container-highest shadow-sm relative group">
+                <img v-if="shopStore.selectedShop.image" :src="shopStore.selectedShop.image" alt="Profile"
+                    class="w-full h-full object-cover" />
+                <div v-else
+                    class="w-full h-full flex items-center justify-center bg-primary text-white font-black text-xs uppercase tracking-tighter">
+                    {{ shopStore.selectedShop.name.charAt(0) }}
+                </div>
             </div>
 
             <!-- Contextual Branding -->

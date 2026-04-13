@@ -7,6 +7,7 @@ export interface Shop {
     name: string;
     branch: string;
     location: string;
+    image?: string;
 }
 
 export const useShopStore = defineStore('shop', () => {
