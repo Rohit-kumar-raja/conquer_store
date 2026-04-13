@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import {
     Search,
@@ -7,13 +7,13 @@ import {
     ChevronDown,
     Edit3,
     AlertCircle,
-    Plus
+    Plus,
+    X
 } from 'lucide-vue-next';
 import { cn } from '../lib/utils';
 import { SurfaceCard } from '../components';
 
 const router = useRouter();
-const emit = defineEmits(['navigate']);
 
 interface StockItem {
     id: string;
@@ -76,11 +76,26 @@ const statusConfig = {
     attention: { label: 'ATTENTION REQUIRED', color: 'text-tertiary', bar: 'bg-tertiary' }
 };
 
+const searchQuery = ref('');
+const selectedFilter = ref<'all' | 'out' | 'low'>('all');
+
+const filteredStock = computed(() => {
+    return stockData.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            item.sku.toLowerCase().includes(searchQuery.value.toLowerCase());
+
+        const matchesFilter = selectedFilter.value === 'all' ||
+            (selectedFilter.value === 'out' && item.status === 'out') ||
+            (selectedFilter.value === 'low' && (item.status === 'critical' || item.status === 'attention'));
+
+        return matchesSearch && matchesFilter;
+    });
+});
+
 const getProgress = (stock: number, maxStock: number) => {
     return (stock / maxStock) * 100;
 };
 
-// For initial mount animation
 const showProgress = ref(false);
 onMounted(() => {
     setTimeout(() => {
@@ -88,7 +103,8 @@ onMounted(() => {
     }, 100);
 });
 
-const getFilterClass = (active?: boolean) => {
+const getFilterClass = (filter: 'all' | 'out' | 'low') => {
+    const active = selectedFilter.value === filter;
     return cn(
         "shrink-0 px-5 py-2.5 rounded-2xl font-bold text-xs tracking-tight flex items-center gap-2 transition-all",
         active
@@ -99,84 +115,125 @@ const getFilterClass = (active?: boolean) => {
 </script>
 
 <template>
-    <div class="px-6 pt-6 space-y-6 pb-20">
-        <section>
-            <h2 class="text-3xl font-extrabold tracking-tight text-on-surface leading-tight">Stock Manager</h2>
+    <div class="px-6 pt-6 space-y-6 pb-40 max-w-md mx-auto">
+        <section class="flex items-center justify-between">
+            <h2 class="text-3xl font-black tracking-tighter text-on-surface leading-tight">Stock Manager</h2>
+            <div class="bg-primary/10 px-3 py-1 rounded-full">
+                <p class="text-[9px] font-black text-primary uppercase tracking-widest">{{ filteredStock.length }} Units
+                </p>
+            </div>
         </section>
 
         <!-- Search Bar -->
-        <div class="relative">
-            <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+        <div class="relative group">
+            <div
+                class="absolute inset-y-0 left-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary">
                 <Search class="w-5 h-5 text-on-surface-variant/40" />
             </div>
-            <input type="text" placeholder="Search catalog by name or SKU..."
-                class="w-full bg-surface-container-low border-none rounded-2xl py-4 pl-12 pr-4 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary/20 transition-all font-medium" />
+            <input v-model="searchQuery" type="text" placeholder="Search catalog or SKU..."
+                class="w-full bg-surface-container-low border-none rounded-[1.5rem] py-4 pl-12 pr-12 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary/20 transition-all font-bold text-sm" />
+            <button v-if="searchQuery" @click="searchQuery = ''"
+                class="absolute inset-y-0 right-4 flex items-center text-on-surface-variant/40 hover:text-error transition-colors">
+                <X class="w-5 h-5" />
+            </button>
         </div>
 
         <!-- Filter Chips -->
-        <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
-            <button :class="getFilterClass(true)">
-                <Filter class="w-4 h-4" /> All Items
+        <div class="flex gap-3 overflow-x-auto hide-scrollbar -mx-2 px-2 pb-2">
+            <button @click="selectedFilter = 'all'" :class="getFilterClass('all')">
+                <Filter class="w-3.5 h-3.5" /> All Items
             </button>
-            <button :class="getFilterClass(false)">Out of Stock</button>
-            <button :class="getFilterClass(false)">Low Stock</button>
-            <button :class="getFilterClass(false)">
-                <ChevronDown class="w-4 h-4" /> Categories
+            <button @click="selectedFilter = 'out'" :class="getFilterClass('out')">Out of Stock</button>
+            <button @click="selectedFilter = 'low'" :class="getFilterClass('low')">Low Stock</button>
+            <button
+                class="shrink-0 px-5 py-2.5 rounded-2xl font-bold text-xs tracking-tight flex items-center gap-2 bg-surface-container-high text-on-surface-variant">
+                <ChevronDown class="w-3.5 h-3.5" /> More
             </button>
         </div>
 
         <!-- Stock List -->
-        <div class="space-y-4">
-            <SurfaceCard v-for="item in stockData" :key="item.id"
+        <div v-if="filteredStock.length > 0" class="space-y-4">
+            <SurfaceCard v-for="item in filteredStock" :key="item.id"
                 @click="router.push({ name: 'product-detail', params: { id: item.id } })"
-                class="p-5 flex flex-col gap-5 hover:scale-[1.02] cursor-pointer">
+                class="p-5 flex flex-col gap-5 hover:scale-[1.02] border border-surface-container-high/50 active:scale-[0.98] transition-all cursor-pointer group">
                 <div class="flex gap-4 items-center">
-                    <div class="w-16 h-16 rounded-2xl overflow-hidden bg-surface-container shrink-0">
-                        <img :src="item.image" :alt="item.name" class="w-full h-full object-cover" />
+                    <div
+                        class="w-16 h-16 rounded-2xl overflow-hidden bg-surface-container shrink-0 border border-surface-container-high">
+                        <img :src="item.image" :alt="item.name"
+                            class="w-full h-full object-cover transition-transform group-hover:scale-110" />
                     </div>
-                    <div class="grow">
-                        <h3 class="font-bold text-lg text-on-surface leading-tight">{{ item.name }}</h3>
-                        <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mt-1">SKU: {{
+                    <div class="grow space-y-1">
+                        <h3 class="font-black text-lg text-on-surface leading-tight tracking-tight">{{ item.name }}</h3>
+                        <p class="text-[9px] font-black text-on-surface-variant uppercase tracking-[0.2em]">SKU: {{
                             item.sku }}</p>
                     </div>
                 </div>
 
-                <div class="space-y-2">
+                <div class="space-y-2.5">
                     <div class="flex justify-between items-end">
                         <span
-                            :class="cn('text-[10px] font-bold tracking-widest uppercase', statusConfig[item.status].color)">
+                            :class="cn('text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md bg-surface-container-highest', statusConfig[item.status].color)">
                             {{ statusConfig[item.status].label }}
                         </span>
-                        <span class="text-xs font-bold text-on-surface">
-                            {{ item.stock }} / {{ item.maxStock }}
-                        </span>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-sm font-black text-on-surface">{{ item.stock }}</span>
+                            <span class="text-[10px] font-bold text-on-surface-variant/40">/ {{ item.maxStock }}</span>
+                        </div>
                     </div>
                     <div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
-                        <div :class="cn('h-full rounded-full transition-all duration-1000 ease-out', statusConfig[item.status].bar)"
+                        <div :class="cn('h-full rounded-full transition-all duration-[1500ms] cubiz-bezier(0.34, 1.56, 0.64, 1)', statusConfig[item.status].bar)"
                             :style="{ width: showProgress ? `${getProgress(item.stock, item.maxStock)}%` : '0%' }" />
                     </div>
                 </div>
 
-                <div class="flex justify-between items-center pt-2 border-t border-surface-container-high">
-                    <div>
-                        <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Category</p>
-                        <p class="font-bold text-on-surface">{{ item.category }}</p>
+                <div class="flex justify-between items-center pt-3 border-t border-surface-container-high/50">
+                    <div class="flex items-center gap-2">
+                        <div class="w-1.5 h-1.5 rounded-full bg-on-surface-variant/20"></div>
+                        <p class="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">{{
+                            item.category }}</p>
                     </div>
-                    <button :class="cn(
-                        'p-3 rounded-2xl transition-all',
-                        item.status === 'out' ? 'bg-error/10 text-error' : 'bg-surface-container-high text-primary hover:bg-primary hover:text-white'
-                    )">
-                        <AlertCircle v-if="item.status === 'out'" class="w-5 h-5" />
-                        <Edit3 v-else class="w-5 h-5" />
-                    </button>
+                    <div class="flex gap-2">
+                        <button
+                            class="p-2.5 rounded-xl bg-surface-container-high text-on-surface-variant hover:text-primary transition-colors">
+                            <Edit3 class="w-4 h-4" />
+                        </button>
+                        <button v-if="item.status === 'out'" class="p-2.5 rounded-xl bg-error/10 text-error">
+                            <AlertCircle class="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
             </SurfaceCard>
         </div>
 
+        <!-- Empty State -->
+        <div v-else class="py-20 flex flex-col items-center justify-center text-center space-y-4">
+            <div class="w-20 h-20 rounded-[2rem] bg-surface-container flex items-center justify-center">
+                <Search class="w-8 h-8 text-on-surface-variant/20" />
+            </div>
+            <div class="space-y-1">
+                <h3 class="text-base font-black text-on-surface tracking-tight">No Resources Found</h3>
+                <p class="text-xs font-bold text-on-surface-variant/50 max-w-[200px]">Adjust your intelligence filters
+                    or search query.</p>
+            </div>
+            <Button @click="searchQuery = ''; selectedFilter = 'all'" variant="secondary" size="small"
+                class="rounded-xl px-6">Reset Ledger</Button>
+        </div>
+
         <!-- Floating Action Button -->
         <button @click="router.push({ name: 'add-product' })"
-            class="fixed bottom-32 right-6 w-16 h-16 rounded-3xl bg-primary text-white shadow-2xl shadow-primary/40 flex items-center justify-center z-50 hover:scale-105 active:scale-95 transition-transform">
+            class="fixed bottom-32 right-6 w-16 h-16 rounded-3xl bg-primary text-white shadow-2xl shadow-primary/40 flex items-center justify-center z-50 active:scale-95 transition-all">
             <Plus class="w-8 h-8" />
         </button>
     </div>
 </template>
+
+<style scoped>
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+</style>
