@@ -35,6 +35,7 @@ const pageTitles: Record<string, string> = {
     'notifications-settings': 'Alert Center',
     'support': 'Support Desk',
     'menu': 'Management',
+    'notifications': 'Intelligence Pulses',
     'add-product': 'New Product',
     'scanner': 'Universal Scanner'
 };
@@ -75,7 +76,7 @@ const pageTitles: Record<string, string> = {
                 class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant">
                 <Share2 class="w-5 h-5" />
             </button>
-            <button @click="showNotification"
+            <button @click="router.push({ name: 'notifications' })"
                 class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-primary relative">
                 <Bell class="w-5 h-5" />
                 <span

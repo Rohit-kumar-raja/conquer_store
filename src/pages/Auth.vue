@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import {
     Store,
     Lock,
@@ -7,62 +8,78 @@ import {
     LogIn,
     Fingerprint,
     ShieldCheck,
-    CreditCard,
     Cloud,
     Zap,
-    Eye
+    Eye,
+    CreditCard
 } from 'lucide-vue-next';
-import { Input, Button, SurfaceCard } from '../components';
+import { Input, Button } from '../components';
 
-const emit = defineEmits(['login']);
-
+const router = useRouter();
 const showPassword = ref(false);
 const role = ref<'cashier' | 'admin'>('cashier');
 
 const handleLogin = () => {
-    emit('login');
+    // Authenticate logic here
+    router.push({ name: 'dashboard' });
 };
 </script>
 
 <template>
-    <div
-        class="min-h-screen bg-surface flex items-center justify-center p-6 bg-[radial-gradient(at_0%_0%,rgba(63,81,181,0.05)_0px,transparent_50%),radial-gradient(at_100%_100%,rgba(36,56,156,0.05)_0px,transparent_50%)]">
-        <SurfaceCard variant="lowest"
-            class="w-full max-w-md rounded-4xl overflow-hidden shadow-2xl border border-surface-container-high">
-            <!-- Form -->
-            <div class="p-10 flex flex-col justify-center">
-                <div class="flex items-center gap-3 mb-12">
-                    <Zap class="w-8 h-8 text-primary" />
-                    <span class="text-2xl font-extrabold text-on-surface tracking-tight">Predictive Surface</span>
+    <div class="grow flex flex-col px-6 py-12 md:items-center md:justify-center relative overflow-hidden bg-surface">
+        <!-- Abstract Background -->
+        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-80 h-80 bg-tertiary/5 rounded-full -ml-40 -mb-40 blur-3xl"></div>
+
+        <div class="w-full max-w-md flex flex-col relative z-10">
+            <!-- Brand -->
+            <div class="flex items-center gap-3 mb-10">
+                <div
+                    class="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                    <Zap class="w-6 h-6 text-white" />
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-on-surface leading-none">CONQUER</h1>
+                    <p class="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">Intelligent Retail</p>
+                </div>
+            </div>
+
+            <!-- Intro -->
+            <header class="mb-10">
+                <h2 class="text-4xl font-extrabold text-on-surface mb-3 tracking-tighter">Terminal Access</h2>
+                <p class="text-on-surface-variant/70 font-bold leading-tight">Identify yourself to initialize the
+                    terminal protocol.</p>
+            </header>
+
+            <form class="space-y-6" @submit.prevent="handleLogin">
+                <!-- Advanced Role Switcher -->
+                <div class="flex p-1 bg-surface-container-high rounded-2xl gap-1">
+                    <button type="button" @click="role = 'cashier'"
+                        :class="['flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all', role === 'cashier' ? 'bg-surface text-primary shadow-sm' : 'text-on-surface-variant/60']">
+                        Cashier
+                    </button>
+                    <button type="button" @click="role = 'admin'"
+                        :class="['flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all', role === 'admin' ? 'bg-surface text-primary shadow-sm' : 'text-on-surface-variant/60']">
+                        Admin
+                    </button>
                 </div>
 
-                <header class="mb-12">
-                    <h2 class="text-4xl font-extrabold text-on-surface mb-2 tracking-tight">Authentication</h2>
-                    <p class="text-on-surface-variant font-medium">Enter your credentials to access the terminal.</p>
-                </header>
-
-                <form class="space-y-8" @submit.prevent="handleLogin">
-                    <!-- Role Switcher -->
-                    <div class="flex p-1.5 bg-surface-container-high rounded-2xl gap-1">
-                        <button type="button" @click="role = 'cashier'"
-                            :class="['flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all', role === 'cashier' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface']">
-                            Cashier
-                        </button>
-                        <button type="button" @click="role = 'admin'"
-                            :class="['flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all', role === 'admin' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface']">
-                            Admin
-                        </button>
-                    </div>
-
-                    <div class="space-y-6">
-                        <Input label="Store ID" placeholder="Enter terminal ID">
+                <div class="space-y-5">
+                    <div class="group">
+                        <Input label="Protocol ID" placeholder="ST-9823-X" class="rounded-2xl">
                             <template #icon>
-                                <Store class="w-5 h-5" />
+                                <Store
+                                    class="w-5 h-5 text-on-surface-variant group-focus-within:text-primary transition-colors" />
                             </template>
                         </Input>
-                        <Input label="Password" placeholder="••••••••" :type="showPassword ? 'text' : 'password'">
+                    </div>
+
+                    <div class="group">
+                        <Input label="Access Key" placeholder="••••••••" :type="showPassword ? 'text' : 'password'"
+                            class="rounded-2xl">
                             <template #icon>
-                                <Lock class="w-5 h-5" />
+                                <Lock
+                                    class="w-5 h-5 text-on-surface-variant group-focus-within:text-primary transition-colors" />
                             </template>
                             <template #rightIcon>
                                 <button type="button" @click="showPassword = !showPassword"
@@ -73,44 +90,64 @@ const handleLogin = () => {
                             </template>
                         </Input>
                     </div>
+                </div>
 
-                    <div class="flex items-center justify-between">
-                        <label class="flex items-center gap-3 cursor-pointer group">
-                            <input type="checkbox"
-                                class="w-5 h-5 rounded-lg border-surface-container-highest text-primary focus:ring-primary/20 transition-all" />
-                            <span
-                                class="text-sm font-bold text-on-surface-variant group-hover:text-on-surface transition-colors">Remember
-                                device</span>
-                        </label>
-                        <button type="button" class="text-sm font-bold text-primary hover:underline">Forgot
-                            Access?</button>
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <div class="relative w-5 h-5">
+                            <input type="checkbox" class="peer sr-only" />
+                            <div
+                                class="w-5 h-5 rounded-md border-2 border-surface-container-highest peer-checked:bg-primary peer-checked:border-primary transition-all">
+                            </div>
+                            <ShieldCheck
+                                class="absolute inset-0 w-3 h-3 m-auto text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                        </div>
+                        <span
+                            class="text-[11px] font-black uppercase tracking-widest text-on-surface-variant/70 group-hover:text-on-surface transition-colors">Stay
+                            Sync</span>
+                    </label>
+                    <button type="button"
+                        class="text-[11px] font-black uppercase tracking-widest text-primary/80 hover:text-primary transition-colors">Lost
+                        Code?</button>
+                </div>
+
+                <div class="flex flex-col gap-4 pt-4">
+                    <Button type="submit"
+                        class="w-full h-16 rounded-2xl shadow-xl shadow-primary/20 text-lg font-black tracking-tight"
+                        size="xl">
+                        <template #icon>
+                            <LogIn class="w-6 h-6" />
+                        </template>
+                        Initialize Session
+                    </Button>
+
+                    <div class="flex items-center gap-4">
+                        <div class="grow h-px bg-surface-container-high"></div>
+                        <span
+                            class="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Secured
+                            Biometrics</span>
+                        <div class="grow h-px bg-surface-container-high"></div>
                     </div>
 
-                    <div class="flex gap-4">
-                        <Button type="submit" class="flex-3" size="xl">
-                            <template #icon>
-                                <LogIn class="w-6 h-6" />
-                            </template>
-                            Sign In
-                        </Button>
-                        <Button type="button" variant="secondary" class="flex-1" size="xl">
-                            <template #icon>
-                                <Fingerprint class="w-8 h-8" />
-                            </template>
-                        </Button>
-                    </div>
-                </form>
+                    <Button type="button" variant="secondary"
+                        class="w-full h-14 rounded-2xl border-2 font-black uppercase tracking-widest flex items-center justify-center gap-3"
+                        size="lg">
+                        <Fingerprint class="w-6 h-6" />
+                        Face ID Access
+                    </Button>
+                </div>
+            </form>
 
-                <footer class="mt-16 pt-8 border-t border-surface-container-high flex flex-col items-center gap-6">
-                    <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-[0.2em]">Secure Terminal
-                        • v4.2.0</p>
-                    <div class="flex gap-8 text-surface-container-highest">
-                        <ShieldCheck class="w-6 h-6" />
-                        <CreditCard class="w-6 h-6" />
-                        <Cloud class="w-6 h-6" />
-                    </div>
-                </footer>
-            </div>
-        </SurfaceCard>
+            <footer class="mt-auto pt-12 flex flex-col items-center gap-6">
+                <div class="flex gap-10">
+                    <Cloud class="w-5 h-5 text-on-surface-variant/30" />
+                    <CreditCard class="w-5 h-5 text-on-surface-variant/30" />
+                    <ShieldCheck class="w-5 h-5 text-on-surface-variant/30" />
+                </div>
+                <p class="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em]">Encrypted
+                    Terminal •
+                    v4.2.0-PRO</p>
+            </footer>
+        </div>
     </div>
 </template>
