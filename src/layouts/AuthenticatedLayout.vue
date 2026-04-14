@@ -11,7 +11,7 @@ const route = useRoute();
         <TheHeader v-if="route.name !== 'scanner'" />
 
         <!-- Main Content -->
-        <main :class="['grow max-w-md mx-auto w-full', route.name !== 'scanner' ? 'pb-24' : '']">
+        <main :class="['grow max-w-md mx-auto w-full', route.name !== 'scanner' ? 'pb-32' : '']">
             <router-view v-slot="{ Component }">
                 <transition name="fade-slide" mode="out-in">
                     <component :is="Component" />

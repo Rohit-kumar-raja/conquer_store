@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
 import { ref, computed } from 'vue';
-
-const router = useRouter();
-import {
-    Plus,
-    Ticket,
-    CreditCard,
-    Scan
-} from 'lucide-vue-next';
-import { StockItem, SurfaceCard, Button } from '../components';
-
+import BillHeader from '../components/bill/BillHeader.vue';
+import BillUserSelect from '../components/bill/BillUserSelect.vue';
+import BillItemList from '../components/bill/BillItemList.vue';
+import BillOffers from '../components/bill/BillOffers.vue';
+import BillSummary from '../components/bill/BillSummary.vue';
 
 const items = ref([
     {
@@ -39,6 +33,16 @@ const items = ref([
     }
 ]);
 
+const users = ref([
+    { name: "Walk-in Customer", phone: "+91 00000 00000", id: "gen-01" },
+    { name: "Raaj Philips", phone: "+91 98765 43210", id: "cus-01" },
+    { name: "Sanjana Sharma", phone: "+91 88888 77777", id: "cus-02" },
+    { name: "Aditya Verma", phone: "+91 77777 66666", id: "cus-03" },
+    { name: "Vikram Singh", phone: "+91 91234 56789", id: "cus-04" },
+]);
+
+const selectedUser = ref(users.value[0]);
+
 const updateQty = (id: number, newQty: number) => {
     const item = items.value.find(i => i.id === id);
     if (item) {
@@ -58,136 +62,22 @@ const subtotal = computed(() => items.value.reduce((acc, item) => acc + item.pri
 const gst = computed(() => subtotal.value * 0.18);
 const total = computed(() => subtotal.value + gst.value);
 
-const getOfferClass = (active: boolean) => {
-    return active
-        ? "bg-surface-container-highest border-primary/20"
-        : "bg-surface-container border-surface-container-highest opacity-60";
-};
 
-const getOfferIconClass = (active: boolean) => {
-    return active ? "bg-primary text-white" : "bg-surface-container-highest text-secondary";
-};
-
-const getOfferBtnClass = (active: boolean) => {
-    return active
-        ? "bg-primary text-white shadow-lg shadow-primary/10"
-        : "border border-secondary text-secondary";
-};
 </script>
 
 <template>
-    <div class="px-6 pt-6 space-y-8 pb-96">
-        <section class="flex items-end justify-between">
-            <div>
-                <h2 class="text-3xl font-extrabold tracking-tight text-on-surface leading-tight">Bill</h2>
-                <p class="text-on-surface-variant font-medium">Session ID: <span class="font-mono">TXN-88294</span></p>
-            </div>
-            <div class="bg-surface-container-high px-4 py-2 rounded-full flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span class="text-[10px] font-bold text-primary uppercase tracking-widest">Scanning...</span>
-            </div>
-        </section>
+    <div class="px-6 pt-6 space-y-8 pb-32">
+        <BillHeader invoice-number="#INVOICE-001" />
 
-        <div class="grid grid-cols-1 gap-4">
-            <StockItem v-for="item in items" :key="item.id" variant="bill" :name="item.name" :sku="item.sku"
-                :price="formatCurrency(item.price)" :qty="item.qty" :total="formatCurrency(item.price * item.qty)"
-                :image="item.image"
-                @click="item.id === 1 ? router.push({ name: 'product-detail', params: { id: item.sku } }) : null"
-                @qtyChange="(newQty) => updateQty(item.id, newQty)" @remove="() => removeItem(item.id)" />
+        <BillUserSelect v-model="selectedUser" :users="users" />
 
-            <!-- Scan More Placeholder -->
-            <div @click="router.push({ name: 'scanner' })"
-                class="bg-surface-container rounded-4xl border-2 border-dashed border-surface-container-highest flex flex-col items-center justify-center p-8 text-center min-h-[180px] transition-all duration-300 cursor-pointer group hover:scale-[1.02] hover:bg-surface-container-high hover:border-primary active:scale-[0.98]">
-                <div class="flex gap-3 mb-3">
-                    <div
-                        class="w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">
-                        <Plus class="w-6 h-6" />
-                    </div>
-                    <div
-                        class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-sm group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-300">
-                        <Scan class="w-6 h-6" />
-                    </div>
-                </div>
-                <span class="font-bold text-on-surface text-lg">Scan More Items</span>
-                <p class="text-[10px] text-on-surface-variant mt-1 uppercase tracking-widest font-bold">Scanner or
-                    Manual Entry</p>
-            </div>
-        </div>
+        <BillItemList :items="items" :format-currency="formatCurrency" @update-qty="updateQty"
+            @remove-item="removeItem" />
 
-        <!-- Offers Section -->
-        <section class="space-y-4">
-            <h3 class="text-xl font-bold text-on-surface">Apply Offers</h3>
-            <div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
-                <!-- OfferCard 1 -->
-                <div
-                    :class="['shrink-0 rounded-3xl p-5 w-64 flex flex-col justify-between border transition-all', getOfferClass(true)]">
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <div :class="['p-1.5 rounded-lg', getOfferIconClass(true)]">
-                                <Ticket class="w-5 h-5" />
-                            </div>
-                            <span class="font-bold text-sm tracking-tight">FESTIVE20</span>
-                        </div>
-                        <p class="text-xs text-on-surface-variant font-medium leading-relaxed">20% Off on Lunar Series
-                            Accessories</p>
-                    </div>
-                    <button
-                        :class="['mt-4 w-full py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all', getOfferBtnClass(true)]">
-                        Applied
-                    </button>
-                </div>
+        <BillOffers />
 
-                <!-- OfferCard 2 -->
-                <div
-                    :class="['shrink-0 rounded-3xl p-5 w-64 flex flex-col justify-between border transition-all', getOfferClass(false)]">
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <div :class="['p-1.5 rounded-lg', getOfferIconClass(false)]">
-                                <CreditCard class="w-5 h-5" />
-                            </div>
-                            <span class="font-bold text-sm tracking-tight">HDFC_INT</span>
-                        </div>
-                        <p class="text-xs text-on-surface-variant font-medium leading-relaxed">Flat ₹1,500 off on Credit
-                            Cards</p>
-                    </div>
-                    <button
-                        :class="['mt-4 w-full py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all', getOfferBtnClass(false)]">
-                        Select
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Summary Footer (Fixed-ish) -->
-        <div class="fixed bottom-32 left-0 right-0 w-full px-6 z-40 max-w-md mx-auto">
-            <SurfaceCard variant="glass" class="p-6 shadow-2xl border border-surface-container-high">
-                <div class="grid grid-cols-2 gap-8 mb-6">
-                    <div class="space-y-1">
-                        <div class="flex justify-between items-center">
-                            <span
-                                class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Subtotal</span>
-                            <span class="font-bold text-on-surface">{{ formatCurrency(subtotal) }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">GST
-                                (18%)</span>
-                            <span class="font-bold text-on-surface">{{ formatCurrency(gst) }}</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-end justify-center border-l border-surface-container-high pl-8">
-                        <span class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Total
-                            Payable</span>
-                        <span class="text-3xl font-extrabold text-on-surface tracking-tighter">{{ formatCurrency(total)
-                            }}</span>
-                    </div>
-                </div>
-                <Button class="w-full" size="xl">
-                    <template #icon>
-                        <CreditCard class="w-6 h-6" />
-                    </template>
-                    Finalize Bill
-                </Button>
-            </SurfaceCard>
-        </div>
+        <BillSummary :subtotal="subtotal" :gst="gst" :total="total" :format-currency="formatCurrency" />
     </div>
 </template>
+
+<style scoped></style>

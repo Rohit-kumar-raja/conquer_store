@@ -32,7 +32,7 @@ const pageTitles: Record<string, string> = {
 };
 
 const isMainScreen = computed(() =>
-    ['dashboard', 'bill', 'inventory', 'reports'].includes(currentScreen.value)
+    ['dashboard', 'bill', 'inventory', 'reports', 'menu'].includes(currentScreen.value)
 );
 </script>
 
@@ -83,10 +83,6 @@ const isMainScreen = computed(() =>
                 <Bell class="w-5 h-5" />
                 <span
                     class="absolute top-2.5 right-2.5 w-2 h-2 bg-error rounded-full border-2 border-surface shadow-sm" />
-            </button>
-            <button @click="router.push({ name: 'menu' })"
-                class="w-10 h-10 flex items-center justify-center bg-surface-container-low rounded-2xl text-on-surface hover:bg-surface-container-high active:scale-95 transition-all">
-                <MoreVertical class="w-5 h-5" />
             </button>
         </div>
     </header>

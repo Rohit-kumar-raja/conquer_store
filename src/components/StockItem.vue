@@ -15,10 +15,8 @@ const props = withDefaults(defineProps<{
     total?: string;
     image: string;
     isOutOfStock?: boolean;
-    variant?: 'list' | 'bill';
 }>(), {
     isOutOfStock: false,
-    variant: 'list'
 });
 
 const emit = defineEmits(['remove', 'qtyChange', 'click']);
@@ -29,55 +27,57 @@ const attrs = useAttrs();
 <template>
     <div @click="(e) => emit('click', e)" v-bind="(() => { const { class: _, ...rest } = attrs; return rest; })()"
         :class="cn(
-            'bg-surface-container-lowest p-4 rounded-4xl flex flex-col gap-4 group hover:bg-surface-container-low transition-all active:scale-[0.98] cursor-pointer border-l-4',
-            props.isOutOfStock ? 'border-error' : 'border-transparent',
-            props.variant === 'bill' && 'border-surface-container-high',
+            'bg-surface-container-low p-3 rounded-4xl flex items-center gap-5 transition-all active:scale-[0.98] cursor-pointer group border border-surface-container-highest/20',
             attrs.class as string
         )">
-        <div class="flex gap-4 items-start">
-            <div class="w-20 h-20 rounded-2xl bg-surface-container overflow-hidden shrink-0">
-                <img :src="image" :alt="name" class="w-full h-full object-cover" />
-            </div>
-            <div class="flex-grow">
-                <div class="flex justify-between items-start">
-                    <span class="text-[10px] font-bold tracking-widest text-primary uppercase">SKU: {{ sku }}</span>
-                    <button v-if="attrs.onRemove || $attrs.onRemove" @click.stop="emit('remove')"
-                        class="text-error/40 hover:text-error transition-colors">
-                        <X class="w-4 h-4" />
+
+        <!-- Image -->
+        <div class="w-20 h-20 rounded-3xl bg-surface-container overflow-hidden shrink-0 shadow-inner">
+            <img :src="image" :alt="name" class="w-full h-full object-cover" />
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-grow min-w-0 flex flex-col justify-between py-1">
+            <div class="flex items-center justify-between gap-4">
+                <div class="min-w-0">
+                    <h3 class="font-black text-on-surface text-lg leading-tight truncate">{{ name }}</h3>
+                    <p class="text-[10px] font-black tracking-widest text-primary/40 uppercase mt-1">SKU: {{ sku }}</p>
+                </div>
+
+                <!-- Qty Controls: Right of Title -->
+                <div
+                    class="flex items-center gap-1 bg-surface-container-highest/50 rounded-[1rem] p-1 shrink-0 border border-surface-container-highest/30">
+                    <button @click.stop="emit('qtyChange', Math.max(0, (qty || 0) - 1))"
+                        class="w-8 h-8 rounded-xl bg-surface-container-low flex items-center justify-center text-primary shadow-sm hover:bg-primary hover:text-white transition-all active:scale-90">
+                        <Minus class="w-4 h-4" />
+                    </button>
+                    <span class="w-8 text-center text-sm font-black text-on-surface">{{ qty || 1 }}</span>
+                    <button @click.stop="emit('qtyChange', (qty || 0) + 1)"
+                        class="w-8 h-8 rounded-xl bg-surface-container-low flex items-center justify-center text-primary shadow-sm hover:bg-primary hover:text-white transition-all active:scale-90">
+                        <Plus class="w-4 h-4" />
                     </button>
                 </div>
-                <h3 class="font-bold text-lg mt-1 text-on-surface leading-tight">{{ name }}</h3>
-                <p v-if="price" class="font-extrabold text-primary mt-1 text-lg">{{ price }}</p>
+            </div>
+
+            <div class="flex items-end justify-between mt-3">
+                <div>
+                    <span class="text-[9px] font-black text-on-surface-variant/40 block uppercase tracking-tighter">Unit
+                        Price</span>
+                    <p class="font-black text-primary text-base leading-none">{{ price }}</p>
+                </div>
+
+                <div v-if="total" class="text-right">
+                    <span class="text-[9px] font-black text-on-surface-variant/40 block uppercase tracking-tighter">Item
+                        Total</span>
+                    <span class="font-black text-on-surface text-lg leading-none">{{ total }}</span>
+                </div>
             </div>
         </div>
 
-        <div class="flex items-center justify-between">
-            <div v-if="props.variant === 'bill'"
-                class="flex items-center gap-1 bg-surface-container-high p-1 rounded-2xl">
-                <button @click.stop="emit('qtyChange', Math.max(0, (qty || 0) - 1))"
-                    class="w-8 h-8 rounded-xl bg-surface-container-lowest flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
-                    <Minus class="w-4 h-4" />
-                </button>
-                <span class="w-10 text-center font-bold">{{ qty }}</span>
-                <button @click.stop="emit('qtyChange', (qty || 0) + 1)"
-                    class="w-8 h-8 rounded-xl bg-surface-container-lowest flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
-                    <Plus class="w-4 h-4" />
-                </button>
-            </div>
-            <div v-else class="flex flex-col">
-                <div :class="cn('text-lg font-extrabold', props.isOutOfStock ? 'text-error' : 'text-tertiary')">
-                    {{ stock }} {{ stock === 1 ? 'Unit' : 'Units' }}
-                </div>
-                <div class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant opacity-60">
-                    {{ props.isOutOfStock ? 'Out of Stock' : `Reorder: ${reorder}` }}
-                </div>
-            </div>
-
-            <div v-if="props.variant === 'bill'" class="text-right">
-                <span class="text-[10px] font-bold text-on-surface-variant block uppercase tracking-tighter">Item
-                    Total</span>
-                <span class="font-bold text-on-surface">{{ total || price }}</span>
-            </div>
-        </div>
+        <!-- Remove Action -->
+        <button v-if="attrs.onRemove || $attrs.onRemove" @click.stop="emit('remove')"
+            class="w-12 h-12 rounded-2xl bg-error/5 text-error/30 hover:bg-error/10 hover:text-error transition-all flex items-center justify-center active:scale-75">
+            <X class="w-6 h-6" />
+        </button>
     </div>
 </template>
