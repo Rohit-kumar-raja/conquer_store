@@ -1,142 +1,195 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import {
-    User,
-    Mail,
-    Phone,
-    MapPin,
-    Camera,
-    Check,
-    Briefcase,
-    Shield,
-    BadgeCheck
+    User, Mail, Phone, MapPin, Camera,
+    Shield, Briefcase, BadgeCheck, Crown, Store, Calendar, Edit3
 } from 'lucide-vue-next';
-import { SurfaceCard, Button, Input, IntelligenceBadge } from '../components';
+import { useShopStore } from '../stores/useShopStore';
 
 const router = useRouter();
+const shopStore = useShopStore();
 </script>
 
 <template>
-    <div class="space-y-0 pb-40 min-h-screen bg-surface-container-lowest">
-        <!-- Dramatic Header -->
-        <div class="relative h-64 overflow-hidden">
-            <div class="absolute inset-0 bg-primary-gradient opacity-10"></div>
-            <div
-                class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent">
+    <div class="px-5 pt-2 space-y-6 pb-40 max-w-md mx-auto">
+
+        <!-- Avatar + Name Card -->
+        <section class="flex flex-col items-center text-center pt-4">
+            <div class="relative group">
+                <div
+                    class="w-24 h-24 rounded-[1.8rem] bg-primary flex items-center justify-center text-white font-black text-3xl shadow-xl shadow-primary/20 ring-4 ring-surface-container-lowest">
+                    R
+                </div>
+                <button
+                    class="absolute -bottom-1.5 -right-1.5 p-2 bg-primary text-white rounded-xl shadow-lg border-3 border-surface-container-lowest active:scale-90 transition-all">
+                    <Camera class="w-3.5 h-3.5" />
+                </button>
             </div>
 
-            <div class="absolute bottom-0 left-0 right-0 p-8 flex items-end gap-6 translate-y-8">
-                <div class="relative group">
-                    <div class="w-32 h-32 rounded-[2.5rem] bg-surface-container-lowest p-1.5 shadow-2xl relative z-10">
+            <div class="mt-4 space-y-1">
+                <div class="flex items-center justify-center gap-2">
+                    <h2 class="text-2xl font-black text-on-surface tracking-tight">Raaj Kumar</h2>
+                    <BadgeCheck class="w-5 h-5 text-primary fill-primary/10" />
+                </div>
+                <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-[0.2em]">
+                    {{ shopStore.selectedShop.name }} • {{ shopStore.selectedShop.location }}
+                </p>
+                <div class="flex items-center justify-center gap-2 pt-1">
+                    <span
+                        class="text-[8px] font-black uppercase tracking-wider bg-primary/10 text-primary px-2.5 py-1 rounded-lg flex items-center gap-1">
+                        <Crown class="w-3 h-3" /> Owner
+                    </span>
+                    <span
+                        class="text-[8px] font-black uppercase tracking-wider bg-tertiary/10 text-tertiary px-2.5 py-1 rounded-lg">
+                        Pro Plan
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Info Row -->
+        <section>
+            <div class="grid grid-cols-3 gap-3">
+                <div
+                    class="bg-surface-container-low rounded-3xl p-4 text-center border border-surface-container-high/20">
+                    <Store class="w-5 h-5 text-primary mx-auto mb-2" />
+                    <p class="text-lg font-black text-on-surface">2</p>
+                    <p class="text-[8px] font-black text-on-surface-variant/40 uppercase tracking-wider">Stores</p>
+                </div>
+                <div
+                    class="bg-surface-container-low rounded-3xl p-4 text-center border border-surface-container-high/20">
+                    <Shield class="w-5 h-5 text-tertiary mx-auto mb-2" />
+                    <p class="text-lg font-black text-on-surface">Full</p>
+                    <p class="text-[8px] font-black text-on-surface-variant/40 uppercase tracking-wider">Access</p>
+                </div>
+                <div
+                    class="bg-surface-container-low rounded-3xl p-4 text-center border border-surface-container-high/20">
+                    <Calendar class="w-5 h-5 text-secondary mx-auto mb-2" />
+                    <p class="text-lg font-black text-on-surface">1y</p>
+                    <p class="text-[8px] font-black text-on-surface-variant/40 uppercase tracking-wider">Active</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Details -->
+        <section class="space-y-3">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 px-1">
+                Contact Details
+            </h3>
+
+            <div class="bg-surface-container-low rounded-4xl border border-surface-container-high/30 overflow-hidden">
+                <div v-for="(item, index) in [
+                    { icon: User, label: 'Full Name', value: 'Raaj Kumar' },
+                    { icon: Mail, label: 'Email', value: 'raaj@conquer.in' },
+                    { icon: Phone, label: 'Phone', value: '+91 98765 43210' },
+                    { icon: MapPin, label: 'Location', value: 'Mumbai, Maharashtra' },
+                ]" :key="item.label" :class="[
+                    'p-4 px-5 flex items-center justify-between group transition-all',
+                    index !== 3 && 'border-b border-surface-container-high/20'
+                ]">
+                    <div class="flex items-center gap-4">
                         <div
-                            class="w-full h-full rounded-[2.1rem] overflow-hidden bg-primary-container ring-1 ring-surface-container-high">
-                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBif5fpPe2EEqcu1ZbteVYNAjet40-NQX_9ALU7bOEoVni_wOLgEGq_y0CJe3MNfL2hRmEYipcFLWOuMQ0rejCioXBghLEXIihmEqtGwntNvoT5d6g2CXCWpio-h7vlr0bEiYLz4OJ-u6AR8yughIppTKA9RL3VWkkeCINs9vUhzN3x99cxP90I6AKowti-_xTGW6rWtdaNaiRjO6S4HVzcvNTWdz_w7No0jl1r5dHW8APEHcc4HJJv2QLj_u62NoxmmXCCHuwZ"
-                                alt="Profile"
-                                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                            class="w-10 h-10 rounded-xl bg-surface-container-high/50 flex items-center justify-center text-on-surface-variant/60">
+                            <component :is="item.icon" class="w-4.5 h-4.5" />
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-bold text-on-surface-variant/40 uppercase tracking-wider">{{
+                                item.label }}</p>
+                            <p class="font-black text-on-surface text-sm mt-0.5">{{ item.value }}</p>
                         </div>
                     </div>
-                    <button
-                        class="absolute -bottom-2 -right-2 z-20 p-3 bg-primary text-white rounded-2xl shadow-xl border-4 border-surface-container-lowest hover:scale-110 active:scale-95 transition-all">
-                        <Camera class="w-5 h-5" />
-                    </button>
-                </div>
-
-                <div class="pb-10 flex-1">
-                    <div class="flex items-center gap-2 mb-1">
-                        <IntelligenceBadge label="Verified Executive" variant="primary" small />
-                        <div class="flex items-center gap-1 text-primary">
-                            <BadgeCheck class="w-4 h-4 fill-primary/10" />
-                        </div>
-                    </div>
-                    <h2 class="text-4xl font-black text-on-surface tracking-tight">Raaj Kumar</h2>
-                    <p class="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mt-1 italic">
-                        Conquer Nexus Hub • Mumbai</p>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="px-8 mt-12 space-y-10">
-            <!-- Information Grid -->
-            <section class="space-y-6">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant/50">Core Identity
-                    </h3>
-                    <div class="h-px flex-1 bg-surface-container-high mx-4"></div>
-                </div>
+        <!-- Business Info -->
+        <section class="space-y-3">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 px-1">
+                Business Info
+            </h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Input label="Full Name" value="Raaj Kumar" container-class="bg-surface-container-low/50">
-                        <template #icon>
-                            <User class="w-5 h-5" />
-                        </template>
-                    </Input>
-                    <Input label="Email Address" value="raaj@nexus.inc" container-class="bg-surface-container-low/50">
-                        <template #icon>
-                            <Mail class="w-5 h-5" />
-                        </template>
-                    </Input>
-                    <Input label="Phone Number" value="+91 98765 43210" container-class="bg-surface-container-low/50">
-                        <template #icon>
-                            <Phone class="w-5 h-5" />
-                        </template>
-                    </Input>
-                    <Input label="Business Location" value="Mumbai, India"
-                        container-class="bg-surface-container-low/50">
-                        <template #icon>
-                            <MapPin class="w-5 h-5" />
-                        </template>
-                    </Input>
-                </div>
-            </section>
-
-            <!-- Roles & Permissions -->
-            <section class="space-y-6">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant/50">Access
-                        Hierarchy</h3>
-                    <div class="h-px flex-1 bg-surface-container-high mx-4"></div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <SurfaceCard variant="low" class="p-5 flex items-center justify-between border border-primary/10">
-                        <div class="flex items-center gap-4">
-                            <div
-                                class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                                <Shield class="w-6 h-6" />
-                            </div>
-                            <div>
-                                <p class="font-bold text-on-surface">Owner Account</p>
-                                <p class="text-[10px] font-black uppercase tracking-widest text-primary">Full Control
-                                </p>
-                            </div>
+            <div class="bg-surface-container-low rounded-4xl border border-surface-container-high/30 overflow-hidden">
+                <div v-for="(item, index) in [
+                    { icon: Store, label: 'Business Name', value: shopStore.selectedShop.name },
+                    { icon: Briefcase, label: 'GSTIN', value: '27AABCU9603R1ZP' },
+                    { icon: MapPin, label: 'Branch', value: shopStore.selectedShop.branch },
+                ]" :key="item.label" :class="[
+                    'p-4 px-5 flex items-center justify-between group transition-all',
+                    index !== 2 && 'border-b border-surface-container-high/20'
+                ]">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-surface-container-high/50 flex items-center justify-center text-on-surface-variant/60">
+                            <component :is="item.icon" class="w-4.5 h-4.5" />
                         </div>
-                        <Check class="w-5 h-5 text-primary" />
-                    </SurfaceCard>
-
-                    <SurfaceCard variant="low" class="p-5 flex items-center justify-between opacity-60">
-                        <div class="flex items-center gap-4">
-                            <div
-                                class="w-12 h-12 rounded-2xl bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
-                                <Briefcase class="w-6 h-6" />
-                            </div>
-                            <div>
-                                <p class="font-bold text-on-surface">Administrator</p>
-                                <p class="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
-                                    System Access
-                                </p>
-                            </div>
+                        <div>
+                            <p class="text-[9px] font-bold text-on-surface-variant/40 uppercase tracking-wider">{{
+                                item.label }}</p>
+                            <p class="font-black text-on-surface text-sm mt-0.5">{{ item.value }}</p>
                         </div>
-                        <Check class="w-5 h-5 text-on-surface-variant/30" />
-                    </SurfaceCard>
+                    </div>
                 </div>
-            </section>
-        </div>
+            </div>
+        </section>
 
-        <!-- Footer Action -->
-        <div class="fixed bottom-10 left-8 right-8 z-50">
-            <Button class="w-full shadow-2xl shadow-primary/30 border-4 border-surface" size="xl">
-                Update Identity
-            </Button>
-        </div>
+        <!-- Roles -->
+        <section class="space-y-3">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 px-1">
+                Access Level
+            </h3>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-surface-container-low p-4 rounded-3xl border border-primary/10">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                            <Shield class="w-5 h-5" />
+                        </div>
+                        <div>
+                            <p class="font-black text-on-surface text-sm">Owner</p>
+                            <p class="text-[8px] font-black text-primary uppercase tracking-wider">Full Control</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-1">
+                        <span
+                            class="text-[7px] font-bold bg-primary/5 text-primary/60 px-2 py-0.5 rounded-md">Billing</span>
+                        <span
+                            class="text-[7px] font-bold bg-primary/5 text-primary/60 px-2 py-0.5 rounded-md">Stock</span>
+                        <span
+                            class="text-[7px] font-bold bg-primary/5 text-primary/60 px-2 py-0.5 rounded-md">Reports</span>
+                        <span
+                            class="text-[7px] font-bold bg-primary/5 text-primary/60 px-2 py-0.5 rounded-md">Settings</span>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-surface-container-low p-4 rounded-3xl border border-surface-container-high/20 opacity-50">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
+                            <Briefcase class="w-5 h-5" />
+                        </div>
+                        <div>
+                            <p class="font-black text-on-surface text-sm">Admin</p>
+                            <p class="text-[8px] font-black text-on-surface-variant uppercase tracking-wider">System</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-1">
+                        <span
+                            class="text-[7px] font-bold bg-surface-container-highest text-on-surface-variant/50 px-2 py-0.5 rounded-md">Read</span>
+                        <span
+                            class="text-[7px] font-bold bg-surface-container-highest text-on-surface-variant/50 px-2 py-0.5 rounded-md">Write</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Edit Button -->
+        <section class="pt-2">
+            <button
+                class="w-full p-4 rounded-3xl bg-primary text-white flex items-center justify-center gap-3 font-black text-sm uppercase tracking-wider shadow-xl shadow-primary/20 active:scale-[0.97] transition-all">
+                <Edit3 class="w-5 h-5" />
+                Edit Profile
+            </button>
+        </section>
     </div>
 </template>
