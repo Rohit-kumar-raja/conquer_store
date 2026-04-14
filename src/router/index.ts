@@ -92,6 +92,26 @@ const routes = [
                 path: 'menu/support',
                 component: () => import('../pages/Support.vue'),
                 name: 'support'
+            },
+            {
+                path: 'menu/masterdata/categories',
+                component: () => import('../pages/masterdata/CategoryManagement.vue'),
+                name: 'master-categories'
+            },
+            {
+                path: 'menu/masterdata/brands',
+                component: () => import('../pages/masterdata/BrandManagement.vue'),
+                name: 'master-brands'
+            },
+            {
+                path: 'menu/masterdata/suppliers',
+                component: () => import('../pages/masterdata/SupplierManagement.vue'),
+                name: 'master-suppliers'
+            },
+            {
+                path: 'menu/masterdata/customers',
+                component: () => import('../pages/masterdata/CustomerManagement.vue'),
+                name: 'master-customers'
             }
         ]
     }

@@ -28,7 +28,11 @@ const pageTitles: Record<string, string> = {
     'menu': 'System',
     'notifications': 'Pulses',
     'add-product': 'Inventory',
-    'scanner': 'Optic Scan'
+    'scanner': 'Optic Scan',
+    'master-categories': 'Categories',
+    'master-brands': 'Brands',
+    'master-suppliers': 'Suppliers',
+    'master-customers': 'Customers',
 };
 
 const isMainScreen = computed(() =>
