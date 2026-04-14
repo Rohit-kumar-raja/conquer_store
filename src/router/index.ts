@@ -1,11 +1,16 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import AuthenticatedLayout from '../layouts/AuthenticatedLayout.vue';
 import GuestLayout from '../layouts/GuestLayout.vue';
 
-const routes = [
+const routes: RouteRecordRaw[] = [
+    {
+        path: '/',
+        redirect: '/login'
+    },
     {
         path: '/',
         component: GuestLayout,
+        meta: { guest: true },
         children: [
             {
                 path: 'login',
@@ -17,9 +22,10 @@ const routes = [
     {
         path: '',
         component: AuthenticatedLayout,
+        meta: { requiresAuth: true },
         children: [
             {
-                path: '',
+                path: 'dashboard',
                 component: () => import('../pages/Dashboard.vue'),
                 name: 'dashboard'
             },
@@ -120,6 +126,20 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes,
+});
+
+// Navigation guard
+router.beforeEach((to, _from, next) => {
+    const token = localStorage.getItem('cnq_token');
+    const isAuthenticated = !!token;
+
+    if (to.matched.some(r => r.meta.requiresAuth) && !isAuthenticated) {
+        next({ name: 'login' });
+    } else if (to.matched.some(r => r.meta.guest) && isAuthenticated && to.name === 'login') {
+        next({ name: 'dashboard' });
+    } else {
+        next();
+    }
 });
 
 export default router;

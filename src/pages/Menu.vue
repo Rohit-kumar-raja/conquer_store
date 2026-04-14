@@ -22,10 +22,12 @@ import {
 import { SurfaceCard } from '../components';
 import { useShopStore } from '../stores/useShopStore';
 import { useThemeStore } from '../stores/useThemeStore';
+import { useAuthStore } from '../stores/useAuthStore';
 
 const router = useRouter();
 const shopStore = useShopStore();
 const themeStore = useThemeStore();
+const authStore = useAuthStore();
 
 const menuItems = [
     { id: 'profile', icon: User, label: 'Owner Profile', sub: 'Account & business details', color: 'bg-primary/10 text-primary' },
@@ -48,7 +50,8 @@ const navigateTo = (routeName: string) => {
 };
 
 const handleLogout = () => {
-    router.push({ name: 'auth' });
+    authStore.logout();
+    router.push({ name: 'login' });
 };
 </script>
 
