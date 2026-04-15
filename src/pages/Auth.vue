@@ -12,15 +12,18 @@ const authStore = useAuthStore();
 const view = ref<'login' | 'register'>('login');
 const verifiedPhone = ref('');
 
-const onPhoneVerified = (phone: string) => {
-    verifiedPhone.value = phone;
-    // Mock: check if user exists — in real app, API decides
-    const isExistingUser = false;
-    if (isExistingUser) {
-        authStore.login(phone);
-        router.push({ name: 'dashboard' });
-    } else {
-        view.value = 'register';
+const onPhoneVerified = async (phone: string, otp: string) => {
+    try {
+        const isNewUser = await authStore.verifyOtp(otp, phone);
+        verifiedPhone.value = phone;
+
+        if (isNewUser) {
+            view.value = 'register';
+        } else {
+            router.push({ name: 'dashboard' });
+        }
+    } catch (e) {
+        console.error('OTP Verification failed:', e);
     }
 };
 

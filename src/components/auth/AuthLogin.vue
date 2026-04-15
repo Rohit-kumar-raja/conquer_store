@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import {
-    Phone, Smartphone, ShieldCheck, RotateCcw
+    Phone, Smartphone, ShieldCheck, RotateCcw, AlertTriangle, Loader2
 } from 'lucide-vue-next';
+import { useAuthStore } from '../../stores/useAuthStore';
+
+const authStore = useAuthStore();
 
 const emit = defineEmits<{
-    verified: [phone: string];
+    verified: [phone: string, otp: string];
 }>();
 
 const step = ref<'phone' | 'otp'>('phone');
+const loading = computed(() => authStore.loading);
+const error = computed(() => authStore.error);
 
 // Phone
 const phone = ref('');
@@ -23,11 +28,17 @@ let timerInterval: number | null = null;
 const fullPhone = computed(() => `${countryCode.value} ${phone.value}`);
 const isPhoneValid = computed(() => phone.value.replace(/\D/g, '').length >= 10);
 const isOtpComplete = computed(() => otp.value.every(d => d !== ''));
+const fullOtp = computed(() => otp.value.join(''));
 
-const sendOtp = () => {
-    if (!isPhoneValid.value) return;
-    step.value = 'otp';
-    startResendTimer();
+const sendOtp = async () => {
+    if (!isPhoneValid.value || loading.value) return;
+    try {
+        await authStore.sendOtp(fullPhone.value);
+        step.value = 'otp';
+        startResendTimer();
+    } catch (e) {
+        console.error('Send OTP Error:', e);
+    }
 };
 
 const startResendTimer = () => {
@@ -42,18 +53,28 @@ const startResendTimer = () => {
     }, 1000);
 };
 
-const resendOtp = () => {
-    if (resendTimer.value > 0) return;
-    otp.value = ['', '', '', '', '', ''];
-    startResendTimer();
+const resendOtp = async () => {
+    if (resendTimer.value > 0 || loading.value) return;
+    try {
+        otp.value = ['', '', '', '', '', ''];
+        await authStore.sendOtp(fullPhone.value);
+        startResendTimer();
+    } catch (e) {
+        console.error('Resend OTP Error:', e);
+    }
 };
 
 const handleOtpInput = (index: number, event: Event) => {
     const target = event.target as HTMLInputElement;
     const val = target.value.replace(/\D/g, '');
     otp.value[index] = val.slice(-1);
+
     if (val && index < 5) {
         otpRefs.value[index + 1]?.focus();
+    }
+
+    if (isOtpComplete.value) {
+        verifyOtp();
     }
 };
 
@@ -69,12 +90,13 @@ const handleOtpPaste = (event: ClipboardEvent) => {
         for (let i = 0; i < 6; i++) otp.value[i] = paste[i];
         otpRefs.value[5]?.focus();
         event.preventDefault();
+        verifyOtp();
     }
 };
 
 const verifyOtp = () => {
-    if (!isOtpComplete.value) return;
-    emit('verified', fullPhone.value);
+    if (!isOtpComplete.value || loading.value) return;
+    emit('verified', fullPhone.value, fullOtp.value);
 };
 
 const goBack = () => {
@@ -82,6 +104,7 @@ const goBack = () => {
     otp.value = ['', '', '', '', '', ''];
 };
 </script>
+
 
 <template>
     <!-- Phone Step -->
