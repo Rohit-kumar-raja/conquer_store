@@ -27,12 +27,18 @@ const onPhoneVerified = async (phone: string, otp: string) => {
     }
 };
 
-const onRegistrationComplete = (name: string, _businessName: string) => {
-    authStore.register(name, verifiedPhone.value);
-    router.push({ name: 'dashboard' });
+const onRegistrationComplete = async (name: string, _businessName: string) => {
+    try {
+        await authStore.register(name, verifiedPhone.value);
+        router.push({ name: 'dashboard' });
+    } catch (e) {
+        console.error('Registration failed:', e);
+    }
 };
 
-const goBackToLogin = () => {
+const goBackToLogin = async () => {
+    await authStore.clearPendingRegistration();
+    verifiedPhone.value = '';
     view.value = 'login';
 };
 </script>

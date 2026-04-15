@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "342333591605",
+    "project_id": "conquer-bf795",
+    "storage_bucket": "conquer-bf795.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:342333591605:android:36e2bef9579654b1e7a17c",
+        "android_client_info": {
+          "package_name": "com.conquer.store.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDM5RnRxsC6o6R9jTdmAx98ZMWA7Cjwn6o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

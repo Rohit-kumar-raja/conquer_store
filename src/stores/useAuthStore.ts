@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { sendOtp as firebaseSendOtp, verifyOtp as firebaseVerifyOtp, firebaseSignOut } from '../services/firebaseAuth';
+import {
+    sendOtp as firebaseSendOtp,
+    verifyOtp as firebaseVerifyOtp,
+    firebaseSignOut,
+    updateCurrentUserProfile,
+} from '../services/firebaseAuth';
 
 export interface User {
     id: string;
@@ -9,9 +14,16 @@ export interface User {
     uid?: string;
 }
 
+interface PendingRegistration {
+    phone: string;
+    token: string;
+    uid: string;
+}
+
 export const useAuthStore = defineStore('auth', () => {
     const user = ref<User | null>(null);
     const token = ref<string | null>(localStorage.getItem('cnq_token'));
+    const pendingRegistration = ref<PendingRegistration | null>(null);
     const loading = ref(false);
     const error = ref<string | null>(null);
 
@@ -49,16 +61,23 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             const firebaseUser = await firebaseVerifyOtp(otpCode);
 
-            // Store Firebase token
             const idToken = await firebaseUser.getIdToken();
-            token.value = idToken;
-            localStorage.setItem('cnq_token', idToken);
-
-            // Check if user has display name (existing vs new)
             const isNewUser = !firebaseUser.displayName;
 
-            if (!isNewUser) {
-                // Existing user — restore profile
+            if (isNewUser) {
+                pendingRegistration.value = {
+                    phone,
+                    token: idToken,
+                    uid: firebaseUser.uid,
+                };
+                user.value = null;
+                token.value = null;
+                localStorage.removeItem('cnq_token');
+                localStorage.removeItem('cnq_user');
+            } else {
+                pendingRegistration.value = null;
+                token.value = idToken;
+                localStorage.setItem('cnq_token', idToken);
                 user.value = {
                     id: firebaseUser.uid,
                     name: firebaseUser.displayName || '',
@@ -80,15 +99,38 @@ export const useAuthStore = defineStore('auth', () => {
     /**
      * Complete registration for new user
      */
-    const register = (name: string, phone: string) => {
-        const uid = user.value?.uid || `local_${Date.now()}`;
+    const register = async (name: string, phone: string) => {
+        const pending = pendingRegistration.value;
+        if (!pending || pending.phone !== phone) {
+            throw new Error('No verified phone session found. Please verify OTP again.');
+        }
+
+        await updateCurrentUserProfile(name);
+
         user.value = {
-            id: uid,
+            id: pending.uid,
             name,
             phone,
-            uid,
+            uid: pending.uid,
         };
+        token.value = pending.token;
+        localStorage.setItem('cnq_token', pending.token);
         localStorage.setItem('cnq_user', JSON.stringify(user.value));
+        pendingRegistration.value = null;
+    };
+
+    const clearPendingRegistration = async () => {
+        pendingRegistration.value = null;
+        user.value = null;
+        token.value = null;
+        localStorage.removeItem('cnq_token');
+        localStorage.removeItem('cnq_user');
+
+        try {
+            await firebaseSignOut();
+        } catch {
+            /* ignore signout errors */
+        }
     };
 
     /**
@@ -100,9 +142,21 @@ export const useAuthStore = defineStore('auth', () => {
         } catch { /* ignore signout errors */ }
         user.value = null;
         token.value = null;
+        pendingRegistration.value = null;
         localStorage.removeItem('cnq_token');
         localStorage.removeItem('cnq_user');
     };
 
-    return { user, token, loading, error, isAuthenticated, sendOtp, verifyOtp, register, logout };
+    return {
+        user,
+        token,
+        loading,
+        error,
+        isAuthenticated,
+        sendOtp,
+        verifyOtp,
+        register,
+        clearPendingRegistration,
+        logout,
+    };
 });

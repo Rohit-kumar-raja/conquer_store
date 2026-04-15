@@ -5,6 +5,7 @@ import {
     signInWithCredential,
     RecaptchaVerifier,
     signInWithPhoneNumber,
+    updateProfile,
     type ConfirmationResult,
 } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -21,11 +22,36 @@ export const sendOtp = async (phoneNumber: string): Promise<void> => {
     const isNative = Capacitor.isNativePlatform();
 
     if (isNative) {
-        // Native: Capacitor Firebase plugin handles it
-        const result = await FirebaseAuthentication.signInWithPhoneNumber({
-            phoneNumber,
+        nativeVerificationId = null;
+
+        await new Promise<void>(async (resolve, reject) => {
+            const cleanup = async () => {
+                await Promise.allSettled([
+                    codeSentHandle?.remove(),
+                    verificationFailedHandle?.remove(),
+                ]);
+            };
+
+            const codeSentHandle = await FirebaseAuthentication.addListener('phoneCodeSent', async event => {
+                nativeVerificationId = event.verificationId;
+                await cleanup();
+                resolve();
+            });
+
+            const verificationFailedHandle = await FirebaseAuthentication.addListener('phoneVerificationFailed', async event => {
+                await cleanup();
+                reject(new Error(event.message));
+            });
+
+            try {
+                await FirebaseAuthentication.signInWithPhoneNumber({
+                    phoneNumber,
+                });
+            } catch (error) {
+                await cleanup();
+                reject(error);
+            }
         });
-        nativeVerificationId = result.verificationId || null;
     } else {
         // Web: Firebase JS SDK with invisible reCAPTCHA
         let recaptchaContainer = document.getElementById('recaptcha-container');
@@ -84,4 +110,15 @@ export const firebaseSignOut = async () => {
  */
 export const getCurrentUser = () => {
     return auth.currentUser;
+};
+
+/**
+ * Update the signed-in Firebase user's display name.
+ */
+export const updateCurrentUserProfile = async (displayName: string) => {
+    if (!auth.currentUser) {
+        throw new Error('No authenticated Firebase user.');
+    }
+
+    await updateProfile(auth.currentUser, { displayName });
 };
