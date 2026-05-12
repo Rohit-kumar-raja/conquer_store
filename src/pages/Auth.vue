@@ -27,6 +27,16 @@ const onPhoneVerified = async (phone: string, otp: string) => {
     }
 };
 
+const onPhoneAutoVerified = (phone: string, isNewUser: boolean) => {
+    verifiedPhone.value = phone;
+
+    if (isNewUser) {
+        view.value = 'register';
+    } else {
+        router.push({ name: 'dashboard' });
+    }
+};
+
 const onRegistrationComplete = async (name: string, _businessName: string) => {
     try {
         await authStore.register(name, verifiedPhone.value);
@@ -64,7 +74,7 @@ const goBackToLogin = async () => {
             </div>
 
             <!-- Auth Components -->
-            <AuthLogin v-if="view === 'login'" @verified="onPhoneVerified" />
+            <AuthLogin v-if="view === 'login'" @verified="onPhoneVerified" @auto-verified="onPhoneAutoVerified" />
             <AuthRegister v-else :phone="verifiedPhone" @complete="onRegistrationComplete" @back="goBackToLogin" />
 
             <!-- Footer -->

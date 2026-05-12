@@ -12,7 +12,20 @@
           "package_name": "com.conquer.store.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "342333591605-pgk4hq43pm5nmso0dq88b0i57sdr4gek.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.conquer.store.app",
+            "certificate_hash": "352991baff2b176e2736e779f59502b50bee8b43"
+          }
+        },
+        {
+          "client_id": "342333591605-o85m8vf13o4th02b3kkdc9a2kbk6kf4g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDM5RnRxsC6o6R9jTdmAx98ZMWA7Cjwn6o"
@@ -20,7 +33,41 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "342333591605-o85m8vf13o4th02b3kkdc9a2kbk6kf4g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:342333591605:android:9888cdd1da46f373e7a17c",
+        "android_client_info": {
+          "package_name": "com.teekhimirchi.user"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "342333591605-o85m8vf13o4th02b3kkdc9a2kbk6kf4g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDM5RnRxsC6o6R9jTdmAx98ZMWA7Cjwn6o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "342333591605-o85m8vf13o4th02b3kkdc9a2kbk6kf4g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

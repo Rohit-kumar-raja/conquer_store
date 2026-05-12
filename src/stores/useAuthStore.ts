@@ -35,6 +35,36 @@ export const useAuthStore = defineStore('auth', () => {
         try { user.value = JSON.parse(storedUser); } catch { /* ignore */ }
     }
 
+    const completeSignIn = async (firebaseUser: Awaited<ReturnType<typeof firebaseVerifyOtp>>, phone: string): Promise<boolean> => {
+        const idToken = await firebaseUser.getIdToken();
+        const isNewUser = !firebaseUser.displayName;
+
+        if (isNewUser) {
+            pendingRegistration.value = {
+                phone,
+                token: idToken,
+                uid: firebaseUser.uid,
+            };
+            user.value = null;
+            token.value = null;
+            localStorage.removeItem('cnq_token');
+            localStorage.removeItem('cnq_user');
+        } else {
+            pendingRegistration.value = null;
+            token.value = idToken;
+            localStorage.setItem('cnq_token', idToken);
+            user.value = {
+                id: firebaseUser.uid,
+                name: firebaseUser.displayName || '',
+                phone,
+                uid: firebaseUser.uid,
+            };
+            localStorage.setItem('cnq_user', JSON.stringify(user.value));
+        }
+
+        return isNewUser;
+    };
+
     /**
      * Send OTP to phone number via Firebase
      */
@@ -42,7 +72,13 @@ export const useAuthStore = defineStore('auth', () => {
         loading.value = true;
         error.value = null;
         try {
-            await firebaseSendOtp(phoneNumber);
+            const autoVerifiedUser = await firebaseSendOtp(phoneNumber);
+            if (!autoVerifiedUser) {
+                return { autoVerified: false, isNewUser: false };
+            }
+
+            const isNewUser = await completeSignIn(autoVerifiedUser, phoneNumber);
+            return { autoVerified: true, isNewUser };
         } catch (e: any) {
             error.value = e?.message || 'Failed to send OTP';
             throw e;
@@ -60,34 +96,7 @@ export const useAuthStore = defineStore('auth', () => {
         error.value = null;
         try {
             const firebaseUser = await firebaseVerifyOtp(otpCode);
-
-            const idToken = await firebaseUser.getIdToken();
-            const isNewUser = !firebaseUser.displayName;
-
-            if (isNewUser) {
-                pendingRegistration.value = {
-                    phone,
-                    token: idToken,
-                    uid: firebaseUser.uid,
-                };
-                user.value = null;
-                token.value = null;
-                localStorage.removeItem('cnq_token');
-                localStorage.removeItem('cnq_user');
-            } else {
-                pendingRegistration.value = null;
-                token.value = idToken;
-                localStorage.setItem('cnq_token', idToken);
-                user.value = {
-                    id: firebaseUser.uid,
-                    name: firebaseUser.displayName || '',
-                    phone,
-                    uid: firebaseUser.uid,
-                };
-                localStorage.setItem('cnq_user', JSON.stringify(user.value));
-            }
-
-            return isNewUser;
+            return await completeSignIn(firebaseUser, phone);
         } catch (e: any) {
             error.value = e?.message || 'Invalid OTP';
             throw e;
