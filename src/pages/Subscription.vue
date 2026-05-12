@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { CreditCard, Zap, Calendar, ArrowUpRight, CheckCircle2 } from 'lucide-vue-next';
+import { CreditCard, ArrowUpRight, CheckCircle2 } from 'lucide-vue-next';
 import { SurfaceCard, Button, IntelligenceBadge } from '../components';
+import appIcon from '../assets/icon.png';
 </script>
 
 <template>
@@ -16,8 +17,8 @@ import { SurfaceCard, Button, IntelligenceBadge } from '../components';
             <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
             <div class="relative z-10 flex flex-col gap-4">
                 <div class="flex justify-between items-start">
-                    <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white">
-                        <Zap class="w-6 h-6 fill-current" />
+                    <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-sm">
+                        <img :src="appIcon" alt="Conquer" class="w-full h-full object-cover" />
                     </div>
                     <span class="text-[10px] font-black uppercase tracking-widest text-white/60">Annual Plan</span>
                 </div>

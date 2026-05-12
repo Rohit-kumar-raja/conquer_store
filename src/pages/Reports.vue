@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { TrendingUp, DollarSign, Package, Zap } from 'lucide-vue-next';
+import { TrendingUp, DollarSign, Package } from 'lucide-vue-next';
 import { StatCard, SurfaceCard } from '../components';
+import appIcon from '../assets/icon.png';
 
 const router = useRouter();
 const emit = defineEmits(['navigate']);
@@ -55,12 +56,12 @@ onMounted(() => {
 
             <SurfaceCard class="primary-gradient p-6 rounded-4xl text-white shadow-xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 p-4 opacity-10">
-                    <Zap class="w-24 h-24" />
+                    <img :src="appIcon" alt="" class="w-24 h-24 rounded-3xl object-cover" />
                 </div>
                 <p class="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">Total Revenue (7d)</p>
                 <h3 class="text-3xl font-extrabold mb-4">$24,908.12</h3>
                 <div class="flex items-center gap-2 text-xs font-medium">
-                    <Zap class="w-4 h-4" />
+                    <img :src="appIcon" alt="" class="w-4 h-4 rounded object-cover" />
                     Predicted +4% growth next week
                 </div>
             </SurfaceCard>

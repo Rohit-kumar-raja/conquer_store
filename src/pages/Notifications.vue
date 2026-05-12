@@ -4,7 +4,6 @@ import {
     Bell,
     AlertTriangle,
     TrendingUp,
-    Zap,
     ShoppingBag,
     CheckCircle2,
     ChevronRight,
@@ -13,6 +12,7 @@ import {
     Trash2
 } from 'lucide-vue-next';
 import { SurfaceCard, IntelligenceBadge } from '../components';
+import appIcon from '../assets/icon.png';
 
 const selectedTab = ref('all');
 
@@ -63,7 +63,7 @@ const rawNotifications = [
     {
         id: 4,
         type: 'system',
-        icon: Zap,
+        iconImage: appIcon,
         title: 'Cloud Sync Active',
         desc: 'Universal inventory bridge is operating at 99.9% efficiency across all nodes.',
         time: 'Yesterday',
@@ -137,7 +137,8 @@ const filteredNotifications = computed(() => {
                             'w-8 h-8 rounded-xl flex items-center justify-center shadow-sm transition-all group-hover:rotate-6 duration-500',
                             notif.iconBg
                         ]">
-                            <component :is="notif.icon" class="w-5 h-5" />
+                            <img v-if="notif.iconImage" :src="notif.iconImage" alt="" class="w-5 h-5 rounded object-cover" />
+                            <component v-else :is="notif.icon" class="w-5 h-5" />
                         </div>
                         <!-- Unread Status Indicator (Top Left near Icon) -->
                         <div v-if="notif.unread"

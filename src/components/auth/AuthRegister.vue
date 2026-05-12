@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { User, Zap, Phone, ShieldCheck, ArrowRight, RotateCcw } from 'lucide-vue-next';
+import { User, Phone, ShieldCheck, ArrowRight, RotateCcw } from 'lucide-vue-next';
+import appIcon from '../../assets/icon.png';
 
 const props = defineProps<{
     phone: string;
@@ -53,7 +54,7 @@ const submit = () => {
                     Business Name <span class="text-on-surface-variant/20">(optional)</span>
                 </label>
                 <div class="relative">
-                    <Zap class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant/30" />
+                    <img :src="appIcon" alt="" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 rounded object-cover opacity-30" />
                     <input v-model="regBusinessName" type="text" placeholder="Store or business name"
                         class="w-full h-14 rounded-2xl bg-surface-container-high/50 text-on-surface pl-12 pr-4 text-base font-bold placeholder:text-on-surface-variant/25 outline-none focus:ring-2 focus:ring-primary/30 border border-transparent focus:border-primary/20 transition-all" />
                 </div>

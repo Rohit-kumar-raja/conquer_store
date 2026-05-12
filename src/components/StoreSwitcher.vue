@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Store as StoreIcon, Plus, Check, X, MapPin, Zap, ChevronRight } from 'lucide-vue-next';
+import { Store as StoreIcon, Plus, Check, X, MapPin, ChevronRight } from 'lucide-vue-next';
 import { useShopStore } from '../stores/useShopStore';
+import appIcon from '../assets/icon.png';
 
 const shopStore = useShopStore();
 const showAddForm = ref(false);
@@ -96,7 +97,7 @@ const close = () => {
                                         <h3 class="font-black text-on-surface text-sm">{{ store.name }}</h3>
                                         <div v-if="shopStore.selectedShop.id === store.id"
                                             class="flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded-md">
-                                            <Zap class="w-2.5 h-2.5 text-primary" />
+                                            <img :src="appIcon" alt="" class="w-2.5 h-2.5 rounded-sm object-cover" />
                                             <span class="text-[7px] font-black text-primary uppercase">Active</span>
                                         </div>
                                     </div>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-    Zap,
     Factory,
     Calendar,
     Barcode,
@@ -11,6 +10,7 @@ import {
 } from 'lucide-vue-next';
 import { SurfaceCard, IntelligenceBadge, Button } from '../components';
 import { cn } from '../lib/utils';
+import appIcon from '../assets/icon.png';
 
 const emit = defineEmits(['navigate']);
 
@@ -45,7 +45,7 @@ const getRowIconClass = (variant: string) => {
                 <IntelligenceBadge label="High Velocity Item" variant="primary"
                     class="bg-surface-container-lowest/80 backdrop-blur-md shadow-lg border border-white/20">
                     <template #icon>
-                        <Zap class="w-4 h-4" />
+                        <img :src="appIcon" alt="" class="w-4 h-4 rounded object-cover" />
                     </template>
                 </IntelligenceBadge>
             </div>
@@ -144,10 +144,10 @@ const getRowIconClass = (variant: string) => {
         <div class="px-6">
             <SurfaceCard class="primary-gradient p-8 text-white shadow-2xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 p-4 opacity-10">
-                    <Zap class="w-32 h-32" />
+                    <img :src="appIcon" alt="" class="w-32 h-32 rounded-3xl object-cover" />
                 </div>
                 <div class="flex items-center gap-3 mb-4">
-                    <Zap class="w-6 h-6 text-tertiary-container" fill="currentColor" />
+                    <img :src="appIcon" alt="" class="w-6 h-6 rounded-md object-cover" />
                     <h3 class="text-xl font-extrabold">AI Predictive Insight</h3>
                 </div>
                 <p class="text-sm leading-relaxed mb-8 opacity-90">

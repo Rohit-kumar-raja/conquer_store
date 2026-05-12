@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { Zap, CameraOff } from 'lucide-vue-next';
+import { CameraOff } from 'lucide-vue-next';
 import { cn } from '../lib/utils';
+import appIcon from '../assets/icon.png';
 
 const props = withDefaults(defineProps<{
     confidence: number;
@@ -107,7 +108,7 @@ defineExpose({ captureFrame });
         <!-- Top Status Bar -->
         <div v-if="stream"
             class="absolute top-12 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-2.5 bg-black/60 backdrop-blur-xl rounded-full border border-white/20 shadow-2xl">
-            <Zap class="w-3.5 h-3.5 text-primary animate-pulse" />
+            <img :src="appIcon" alt="" class="w-3.5 h-3.5 rounded object-cover animate-pulse" />
             <span class="text-[11px] font-black text-white uppercase tracking-[0.2em]">High Definition Optic
                 Field</span>
         </div>
