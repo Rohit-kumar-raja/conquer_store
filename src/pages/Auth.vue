@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { Zap } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/useAuthStore';
 import AuthLogin from '../components/auth/AuthLogin.vue';
 import AuthRegister from '../components/auth/AuthRegister.vue';
+import appIcon from '../assets/icon.png';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -64,8 +64,8 @@ const goBackToLogin = async () => {
             <!-- Brand -->
             <div class="flex items-center gap-3 mb-10">
                 <div
-                    class="w-11 h-11 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                    <Zap class="w-6 h-6 text-white" />
+                    class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-lg shadow-primary/20 overflow-hidden border border-surface-container-highest/30">
+                    <img :src="appIcon" alt="Conquer" class="w-full h-full object-cover" />
                 </div>
                 <div>
                     <h1 class="text-xl font-black text-on-surface leading-none tracking-tight">CONQUER</h1>
@@ -80,7 +80,7 @@ const goBackToLogin = async () => {
             <!-- Footer -->
             <footer class="mt-auto pt-12 flex flex-col items-center gap-3">
                 <div class="flex items-center gap-2">
-                    <Zap class="w-3.5 h-3.5 text-on-surface-variant/15" />
+                    <img :src="appIcon" alt="" class="w-3.5 h-3.5 rounded object-cover opacity-15" />
                     <span class="text-[9px] font-black text-on-surface-variant/15 uppercase tracking-[0.2em]">
                         Conquer OS • v2.4.0
                     </span>
