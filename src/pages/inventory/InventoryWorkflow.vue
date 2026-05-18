@@ -29,7 +29,7 @@ import {
     Truck,
     Upload
 } from 'lucide-vue-next';
-import { Button, SurfaceCard } from '../../components';
+import { Button, Select, SurfaceCard } from '../../components';
 import { stockInService, type StockInDraft } from '../../services/stockInService';
 
 const route = useRoute();
@@ -548,12 +548,31 @@ const activeConfig = computed(() => configs[String(route.name)] ?? configs['inve
 const icon = computed(() => icons[activeConfig.value.key]);
 const searchQuery = ref('');
 const stockInDraft = ref<StockInDraft | null>(null);
+const supplierOptions = [
+    { name: 'Lumina Tech Logistics' },
+    { name: 'Reliance Distribution' },
+    { name: 'Metro Cash & Carry' },
+    { name: 'Bajaj Wholesale' }
+];
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(value);
 };
 
 const isStockInScreen = computed(() => route.name === 'inventory-stock-in');
+
+const selectedStockInSupplier = computed({
+    get: () => stockInDraft.value?.supplier ?? supplierOptions[0].name,
+    set: (supplier: string) => {
+        if (!stockInDraft.value) return;
+
+        stockInDraft.value = {
+            ...stockInDraft.value,
+            supplier
+        };
+        void stockInService.saveDraft(stockInDraft.value);
+    }
+});
 
 const stockInTotalQty = computed(() =>
     stockInDraft.value?.items.reduce((total, item) => total + item.quantity, 0) ?? 0
@@ -574,11 +593,14 @@ const displayedStats = computed(() => {
 });
 
 const displayedFields = computed(() => {
-    if (!isStockInScreen.value || !stockInDraft.value) return activeConfig.value.fields;
+    if (!isStockInScreen.value || !stockInDraft.value) {
+        return isStockInScreen.value
+            ? activeConfig.value.fields.filter((field) => field.label !== 'Supplier')
+            : activeConfig.value.fields;
+    }
 
     const firstItem = stockInDraft.value.items[0];
     return [
-        { label: 'Supplier', value: stockInDraft.value.supplier },
         { label: 'Invoice Number', value: stockInDraft.value.invoiceNumber },
         { label: 'Invoice Date', value: stockInDraft.value.invoiceDate, type: 'date' },
         { label: 'Receiving Date', value: stockInDraft.value.receivedDate, type: 'date' },
@@ -684,6 +706,12 @@ onMounted(async () => {
                         Products, invoice number, supplier, quantity and costs will auto-fill
                     </p>
                 </div>
+                <Select v-if="isStockInScreen" v-model="selectedStockInSupplier" label="Supplier"
+                    :options="supplierOptions" optionLabel="name" optionValue="name" placeholder="Select Supplier">
+                    <template #icon>
+                        <Truck class="w-5 h-5" />
+                    </template>
+                </Select>
                 <div class="grid grid-cols-1 gap-3">
                     <label v-for="field in displayedFields" :key="field.label" class="space-y-1.5">
                         <span class="text-[9px] font-black text-on-surface-variant/50 uppercase tracking-wider">

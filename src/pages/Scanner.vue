@@ -14,6 +14,7 @@ import { ScannerView } from '../components';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { billService, type ScannedBillProduct } from '../services/billService';
 import { stockInService, type StockInDraft } from '../services/stockInService';
+import { productScanService } from '../services/productScanService';
 
 const router = useRouter();
 const route = useRoute();
@@ -43,6 +44,7 @@ const scannedStockInDraft = ref<StockInDraft | null>(null);
 const isCapturing = ref(false);
 
 const isStockInBillMode = computed(() => route.query.mode === 'stock-in-bill');
+const isAddProductMode = computed(() => route.query.mode === 'add-product');
 const readyProducts = computed(() => capturedProducts.value.filter((product) => !product.loading));
 const scannedCount = computed(() => isStockInBillMode.value ? (scannedStockInDraft.value?.items.length ?? 0) : readyProducts.value.length);
 const activeQuality = computed(() => qualityOptions.find((option) => option.id === selectedQuality.value) ?? qualityOptions[1]);
@@ -67,6 +69,12 @@ const finalizeTransaction = async () => {
     if (isStockInBillMode.value) {
         if (!scannedStockInDraft.value) return;
         router.push({ name: 'inventory-stock-in' });
+        return;
+    }
+
+    if (isAddProductMode.value) {
+        if (!readyProducts.value.length) return;
+        router.push({ name: 'add-product' });
         return;
     }
 
@@ -99,6 +107,21 @@ const capture = async () => {
                     price: `${draft.items.length} lines`,
                     sku: draft.invoiceNumber,
                     stock: draft.items.reduce((total, item) => total + item.quantity, 0),
+                    loading: false
+                }];
+                isCapturing.value = false;
+                return;
+            }
+
+            if (isAddProductMode.value) {
+                const draft = await productScanService.scanProduct(photoData || undefined);
+                capturedProducts.value = [{
+                    id: tempId,
+                    image: draft.image,
+                    name: draft.name,
+                    price: `₹${draft.sellingPrice}`,
+                    sku: draft.sku,
+                    stock: draft.stock,
                     loading: false
                 }];
                 isCapturing.value = false;
@@ -157,7 +180,7 @@ const removeProduct = (id: number) => {
                     class="h-11 px-4 rounded-2xl bg-black/45 backdrop-blur-xl border border-white/10 flex items-center gap-2 text-white">
                     <Maximize2 class="w-4 h-4 text-primary" />
                     <span class="text-[10px] font-black uppercase tracking-[0.2em]">
-                        {{ isStockInBillMode ? 'Scan Stock-In Bill' : 'Full Screen Scan' }}
+                        {{ isStockInBillMode ? 'Scan Stock-In Bill' : isAddProductMode ? 'Scan Product Details' : 'Full Screen Scan' }}
                     </span>
                 </div>
 
@@ -195,6 +218,9 @@ const removeProduct = (id: number) => {
                             <p class="text-[9px] font-bold text-white/45 uppercase tracking-widest mt-1 truncate">
                                 <template v-if="isStockInBillMode">
                                     {{ product.sku }} • {{ product.price }} • {{ product.stock }} units detected
+                                </template>
+                                <template v-else-if="isAddProductMode">
+                                    {{ product.sku }} • {{ product.price }} • {{ product.stock }} opening stock
                                 </template>
                                 <template v-else>
                                     {{ product.sku }} • {{ product.price }} • {{ product.stock }} left
@@ -237,7 +263,7 @@ const removeProduct = (id: number) => {
             class="absolute right-5 bottom-12 z-40 h-12 px-4 rounded-2xl bg-white text-primary shadow-2xl flex items-center gap-2 active:scale-95 transition-all">
             <Receipt class="w-4 h-4" />
             <span class="text-[10px] font-black uppercase tracking-widest">
-                {{ isStockInBillMode ? 'Stock In' : `Bill ${readyProducts.length}` }}
+                {{ isStockInBillMode ? 'Stock In' : isAddProductMode ? 'Use Product' : `Bill ${readyProducts.length}` }}
             </span>
         </button>
     </div>

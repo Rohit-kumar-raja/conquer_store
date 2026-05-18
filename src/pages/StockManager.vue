@@ -18,6 +18,7 @@ import {
 } from 'lucide-vue-next';
 import { cn } from '../lib/utils';
 import { SurfaceCard } from '../components';
+import { productService, type Product, type ProductStockStatus } from '../services/productService';
 
 const router = useRouter();
 
@@ -29,51 +30,21 @@ interface StockItem {
     stock: number;
     maxStock: number;
     category: string;
-    status: 'critical' | 'healthy' | 'out' | 'attention';
+    status: ProductStockStatus;
 }
 
-const stockData: StockItem[] = [
-    {
-        id: '1',
-        name: 'Quantum Pulse X1',
-        sku: 'QPX-2024-RED',
-        image: 'https://picsum.photos/seed/shoe1/200/200',
-        stock: 12,
-        maxStock: 150,
-        category: 'Footwear',
-        status: 'critical'
-    },
-    {
-        id: '2',
-        name: 'Aura Chronos Smart',
-        sku: 'AUR-WCH-SLV',
-        image: 'https://picsum.photos/seed/watch1/200/200',
-        stock: 412,
-        maxStock: 500,
-        category: 'Electronics',
-        status: 'healthy'
-    },
-    {
-        id: '3',
-        name: 'Sonic Boom ANC',
-        sku: 'SNB-HD-BLK',
-        image: 'https://picsum.photos/seed/audio1/200/200',
-        stock: 0,
-        maxStock: 200,
-        category: 'Audio',
-        status: 'out'
-    },
-    {
-        id: '4',
-        name: 'Vortex Prime 85mm',
-        sku: 'VTX-LNS-85',
-        image: 'https://picsum.photos/seed/camera1/200/200',
-        stock: 45,
-        maxStock: 100,
-        category: 'Imaging',
-        status: 'attention'
-    }
-];
+const stockData = ref<StockItem[]>([]);
+
+const toStockItem = (product: Product): StockItem => ({
+    id: product.id,
+    name: product.name,
+    sku: product.sku,
+    image: product.image,
+    stock: product.stock,
+    maxStock: product.maxStock,
+    category: product.category,
+    status: product.status
+});
 
 const statusConfig = {
     critical: { label: 'CRITICAL STOCK', color: 'text-error', bar: 'bg-error' },
@@ -95,7 +66,7 @@ const inventoryTools = [
 ];
 
 const filteredStock = computed(() => {
-    return stockData.filter(item => {
+    return stockData.value.filter(item => {
         const matchesSearch = item.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
             item.sku.toLowerCase().includes(searchQuery.value.toLowerCase());
 
@@ -113,6 +84,10 @@ const getProgress = (stock: number, maxStock: number) => {
 
 const showProgress = ref(false);
 onMounted(() => {
+    productService.getProducts().then((products) => {
+        stockData.value = products.map(toStockItem);
+    });
+
     setTimeout(() => {
         showProgress.value = true;
     }, 100);

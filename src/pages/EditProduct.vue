@@ -14,13 +14,15 @@ import {
     Tag,
     Barcode,
     Truck,
-    ShieldCheck
+    ShieldCheck,
+    FileText
 } from 'lucide-vue-next';
 import { Button, Input, Select, SurfaceCard } from '../components';
 
 const router = useRouter();
 
 const productName = ref('Precision Pro SmartWatch X1');
+const description = ref('Premium smartwatch with AMOLED display, health tracking and durable strap.');
 const sku = ref('PRC-SW-X1-2024');
 const barcode = ref('7501031311309');
 const selectedCategory = ref(2);
@@ -92,6 +94,18 @@ const suppliers = [
             <Input v-model="productName" label="Product Name">
                 <template #icon><Package class="w-5 h-5" /></template>
             </Input>
+            <div class="relative group">
+                <label
+                    class="absolute left-4 -top-2.5 px-2 bg-surface-container-lowest text-[10px] font-bold uppercase tracking-widest text-primary z-10">
+                    Description
+                </label>
+                <div
+                    class="flex items-start bg-surface-container-high rounded-2xl px-5 py-4 min-h-28 transition-all focus-within:ring-2 focus-within:ring-primary/20 border border-transparent focus-within:border-primary/10">
+                    <FileText class="w-5 h-5 text-on-surface-variant mr-4 mt-1 shrink-0" />
+                    <textarea v-model="description" rows="3" placeholder="Add product description..."
+                        class="bg-transparent border-none focus:ring-0 w-full resize-none text-on-surface placeholder:text-on-surface-variant/40 font-bold text-sm outline-none"></textarea>
+                </div>
+            </div>
             <Input v-model="sku" label="SKU Number">
                 <template #icon><Hash class="w-5 h-5" /></template>
             </Input>
