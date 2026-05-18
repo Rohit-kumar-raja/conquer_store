@@ -14,7 +14,7 @@ export const useShopStore = defineStore('shop', () => {
     const toast = useToast();
 
     const shops = ref<Shop[]>([
-        { id: 1, name: 'Indigo Nexus', branch: 'Store #402', location: 'Mumbai' },
+        { id: 1, name: 'Conquer', branch: 'Store #402', location: 'Mumbai' },
         { id: 2, name: 'Conquer Retail', branch: 'Main Wing', location: 'Bangalore' },
         { id: 3, name: 'Pulse Point', branch: 'Express', location: 'Delhi' },
     ]);

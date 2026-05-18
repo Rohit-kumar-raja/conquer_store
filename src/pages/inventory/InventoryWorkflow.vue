@@ -314,7 +314,7 @@ const configs: Record<string, ScreenConfig> = {
             { label: 'Pending Qty', value: '244', tone: 'text-secondary' }
         ],
         fields: [
-            { label: 'From Location', value: 'Indigo Nexus • Mumbai' },
+            { label: 'From Location', value: 'Conquer • Mumbai' },
             { label: 'To Location', value: 'Pulse Point • Delhi' },
             { label: 'Product / SKU', value: 'AUR-WCH-SLV' },
             { label: 'Transfer Quantity', value: '24', type: 'number' },

@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router';
 import {
     AlertTriangle,
     BarChart3,
-    Barcode,
     ChevronRight,
     Clock,
     IndianRupee,
@@ -38,9 +37,9 @@ const revenueTrend = [
 
 const quickActions = [
     { icon: QrCode, label: 'New Bill', route: 'bill', color: 'bg-primary text-white shadow-lg shadow-primary/25' },
-    { icon: Barcode, label: 'Scan', route: 'scanner', color: 'bg-surface-container-high text-primary' },
-    { icon: PackagePlus, label: 'Stock In', route: 'inventory-stock-in', color: 'bg-surface-container-high text-on-surface' },
-    { icon: BarChart3, label: 'Reports', route: 'reports', color: 'bg-surface-container-high text-on-surface' }
+    { icon: Package, label: 'Instock', route: 'inventory-stock-in', color: 'bg-surface-container-high text-secondary' },
+    { icon: PackagePlus, label: 'Add Product', route: 'add-product', color: 'bg-surface-container-high text-primary' },
+    { icon: BarChart3, label: 'Report', route: 'reports', color: 'bg-surface-container-high text-on-surface' }
 ];
 
 const stockAlerts = [
