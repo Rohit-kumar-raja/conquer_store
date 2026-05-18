@@ -8,13 +8,20 @@ import {
     BarChart3,
     Menu
 } from 'lucide-vue-next';
+import { billService } from '../services/billService';
 
 const route = useRoute();
 const router = useRouter();
 
 const currentScreen = computed(() => route.name as string || 'dashboard');
 
-const navigateTo = (screen: string) => {
+const navigateTo = async (screen: string) => {
+    if (screen === 'bill') {
+        const draftItems = await billService.getDraftItems();
+        router.push({ name: draftItems.length ? 'bill' : 'scanner' });
+        return;
+    }
+
     router.push({ name: screen });
 };
 

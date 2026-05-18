@@ -40,6 +40,11 @@ const routes: RouteRecordRaw[] = [
                 name: 'bill'
             },
             {
+                path: 'bill/history',
+                component: () => import('../pages/BillHistory.vue'),
+                name: 'bill-history'
+            },
+            {
                 path: 'notifications',
                 component: () => import('../pages/Notifications.vue'),
                 name: 'notifications'

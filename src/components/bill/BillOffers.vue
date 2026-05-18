@@ -19,43 +19,46 @@ const getOfferBtnClass = (active: boolean) => {
 </script>
 
 <template>
-    <section class="space-y-4">
-        <h3 class="text-xl font-bold text-on-surface italic uppercase tracking-tight">Apply Offers</h3>
-        <div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+    <section class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40">Offers</h3>
+            <span class="text-[9px] font-black text-primary uppercase tracking-widest">1 Applied</span>
+        </div>
+        <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
             <!-- OfferCard 1 -->
             <div
-                :class="['shrink-0 rounded-4xl p-5 w-64 flex flex-col justify-between border transition-all', getOfferClass(true)]">
+                :class="['shrink-0 rounded-3xl p-4 w-52 flex flex-col justify-between border transition-all', getOfferClass(true)]">
                 <div>
                     <div class="flex items-center gap-2 mb-2">
                         <div :class="['p-1.5 rounded-lg', getOfferIconClass(true)]">
-                            <Ticket class="w-5 h-5" />
+                            <Ticket class="w-4 h-4" />
                         </div>
-                        <span class="font-bold text-sm tracking-tight italic">FESTIVE20</span>
+                        <span class="font-black text-xs tracking-tight">FESTIVE20</span>
                     </div>
-                    <p class="text-xs text-on-surface-variant font-medium leading-relaxed">20% Off on Lunar Series
+                    <p class="text-[10px] text-on-surface-variant/60 font-bold leading-relaxed">20% Off on Lunar Series
                         Accessories</p>
                 </div>
                 <button
-                    :class="['mt-4 w-full py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all', getOfferBtnClass(true)]">
+                    :class="['mt-3 w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all', getOfferBtnClass(true)]">
                     Applied
                 </button>
             </div>
 
             <!-- OfferCard 2 -->
             <div
-                :class="['shrink-0 rounded-4xl p-5 w-64 flex flex-col justify-between border transition-all', getOfferClass(false)]">
+                :class="['shrink-0 rounded-3xl p-4 w-52 flex flex-col justify-between border transition-all', getOfferClass(false)]">
                 <div>
                     <div class="flex items-center gap-2 mb-2">
                         <div :class="['p-1.5 rounded-lg', getOfferIconClass(false)]">
-                            <CreditCard class="w-5 h-5" />
+                            <CreditCard class="w-4 h-4" />
                         </div>
-                        <span class="font-bold text-sm tracking-tight italic">HDFC_INT</span>
+                        <span class="font-black text-xs tracking-tight">HDFC_INT</span>
                     </div>
-                    <p class="text-xs text-on-surface-variant font-medium leading-relaxed">Flat ₹1,500 off on Credit
+                    <p class="text-[10px] text-on-surface-variant/60 font-bold leading-relaxed">Flat ₹1,500 off on Credit
                         Cards</p>
                 </div>
                 <button
-                    :class="['mt-4 w-full py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all', getOfferBtnClass(false)]">
+                    :class="['mt-3 w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all', getOfferBtnClass(false)]">
                     Select
                 </button>
             </div>

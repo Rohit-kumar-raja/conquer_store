@@ -7,8 +7,10 @@ import appIcon from '../assets/icon.png';
 const props = withDefaults(defineProps<{
     confidence: number;
     isScanning?: boolean;
+    quality?: 'fast' | 'hd' | 'max';
 }>(), {
-    isScanning: true
+    isScanning: true,
+    quality: 'hd'
 });
 
 const videoRef = ref<HTMLVideoElement | null>(null);
@@ -18,11 +20,15 @@ const error = ref<string | null>(null);
 const startCamera = async () => {
     try {
         error.value = null;
+        const qualityConstraints = {
+            fast: { width: { ideal: 1280 }, height: { ideal: 720 } },
+            hd: { width: { ideal: 1920 }, height: { ideal: 1080 } },
+            max: { width: { ideal: 2560 }, height: { ideal: 1440 } }
+        };
         const constraints = {
             video: {
                 facingMode: 'environment', // Use back camera
-                width: { ideal: 1920 }, // Increased ideal resolution
-                height: { ideal: 1080 }
+                ...qualityConstraints[props.quality]
             }
         };
 
@@ -51,14 +57,14 @@ onUnmounted(() => {
     stopCamera();
 });
 
-const captureFrame = () => {
+const captureFrame = (imageQuality = 0.82) => {
     if (videoRef.value) {
         const canvas = document.createElement('canvas');
         canvas.width = videoRef.value.videoWidth;
         canvas.height = videoRef.value.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx?.drawImage(videoRef.value, 0, 0);
-        return canvas.toDataURL('image/jpeg', 0.8);
+        return canvas.toDataURL('image/jpeg', imageQuality);
     }
     return null;
 };

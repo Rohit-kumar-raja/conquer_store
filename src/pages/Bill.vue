@@ -1,37 +1,15 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import BillHeader from '../components/bill/BillHeader.vue';
 import BillUserSelect from '../components/bill/BillUserSelect.vue';
 import BillItemList from '../components/bill/BillItemList.vue';
 import BillOffers from '../components/bill/BillOffers.vue';
 import BillSummary from '../components/bill/BillSummary.vue';
+import { billService, type BillItem } from '../services/billService';
 
-const items = ref([
-    {
-        id: 1,
-        name: "Studio Pro Wireless",
-        sku: "HD-900",
-        price: 12499.00,
-        qty: 1,
-        image: "https://picsum.photos/seed/audio/200/200"
-    },
-    {
-        id: 2,
-        name: "Lunar Edition X",
-        sku: "WT-42",
-        price: 8950.00,
-        qty: 2,
-        image: "https://picsum.photos/seed/watch2/200/200"
-    },
-    {
-        id: 3,
-        name: 'UltraTab 12.9"',
-        sku: "TB-12P",
-        price: 44200.00,
-        qty: 1,
-        image: "https://picsum.photos/seed/tablet/200/200"
-    }
-]);
+const router = useRouter();
+const items = ref<BillItem[]>([]);
 
 const users = ref([
     { name: "Walk-in Customer", phone: "+91 00000 00000", id: "gen-01" },
@@ -43,15 +21,19 @@ const users = ref([
 
 const selectedUser = ref(users.value[0]);
 
-const updateQty = (id: number, newQty: number) => {
+const loadBillItems = async () => {
+    items.value = await billService.getDraftItems();
+};
+
+const updateQty = async (id: number, newQty: number) => {
     const item = items.value.find(i => i.id === id);
     if (item) {
-        item.qty = newQty;
+        items.value = await billService.updateDraftItemQty(id, newQty);
     }
 };
 
-const removeItem = (id: number) => {
-    items.value = items.value.filter(i => i.id !== id);
+const removeItem = async (id: number) => {
+    items.value = await billService.removeDraftItem(id);
 };
 
 const formatCurrency = (val: number) => {
@@ -62,11 +44,22 @@ const subtotal = computed(() => items.value.reduce((acc, item) => acc + item.pri
 const gst = computed(() => subtotal.value * 0.18);
 const total = computed(() => subtotal.value + gst.value);
 
+const finalizeBill = async () => {
+    const bill = await billService.finalizeDraft(selectedUser.value);
+    if (!bill) return;
+
+    items.value = [];
+    router.push({ name: 'bill-history' });
+};
+
+onMounted(async () => {
+    await loadBillItems();
+});
 
 </script>
 
 <template>
-    <div class="px-6 pt-6 space-y-8 pb-32">
+    <div class="px-5 pt-2 space-y-4 pb-40 max-w-md mx-auto">
         <BillHeader invoice-number="#INVOICE-001" />
 
         <BillUserSelect v-model="selectedUser" :users="users" />
@@ -74,9 +67,10 @@ const total = computed(() => subtotal.value + gst.value);
         <BillItemList :items="items" :format-currency="formatCurrency" @update-qty="updateQty"
             @remove-item="removeItem" />
 
-        <BillOffers />
+        <BillOffers v-if="items.length" />
 
-        <BillSummary :subtotal="subtotal" :gst="gst" :total="total" :format-currency="formatCurrency" />
+        <BillSummary :subtotal="subtotal" :gst="gst" :total="total" :format-currency="formatCurrency"
+            @finalize="finalizeBill" />
     </div>
 </template>
 

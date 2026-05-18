@@ -31,10 +31,10 @@ watch(internalSelectedUser, (newVal) => {
 </script>
 
 <template>
-    <section class="animate-in fade-in slide-in-from-top-5 duration-500 delay-300">
+    <section>
         <Select v-model="internalSelectedUser" :options="users" filter optionLabel="name" placeholder="Select Customer"
             autofocus
-            class="w-full h-18 rounded-4xl bg-primary/5  border-primary/10 flex items-center px-2 group transition-all"
+            class="w-full h-16 rounded-4xl bg-surface-container-low border border-surface-container-high/30 flex items-center px-2 group transition-all"
             filter-placeholder="Search by Name or Phone..." :pt="{
                 root: { class: 'focus:ring-2 focus:ring-primary/20 transition-all' },
                 filterContainer: { class: 'relative flex items-center !border-none !shadow-none' },
@@ -49,16 +49,15 @@ watch(internalSelectedUser, (newVal) => {
                 <Search class="w-5 h-5 text-primary" />
             </template>
             <template #value="slotProps">
-                <div v-if="slotProps.value" class="flex items-center gap-4 pl-2">
+                <div v-if="slotProps.value" class="flex items-center gap-3 pl-2 min-w-0">
                     <div
-                        class="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/20">
-                        <User class="w-6 h-6" />
+                        class="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
+                        <User class="w-5 h-5" />
                     </div>
-                    <div class="flex flex-col text-left">
-                        <h3
-                            class="text-on-surface font-black text-xl leading-tight group-hover:text-primary transition-colors">
+                    <div class="flex flex-col text-left min-w-0">
+                        <h3 class="text-on-surface font-black text-sm leading-tight truncate">
                             {{ slotProps.value.name }}</h3>
-                        <p class="text-[9px] text-on-surface-variant font-bold uppercase tracking-[0.2em]">{{
+                        <p class="text-[9px] text-on-surface-variant/45 font-bold uppercase tracking-[0.16em] truncate">{{
                             slotProps.value.phone }}</p>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
     AlertTriangle,
@@ -30,6 +30,7 @@ import {
     Upload
 } from 'lucide-vue-next';
 import { Button, SurfaceCard } from '../../components';
+import { stockInService, type StockInDraft } from '../../services/stockInService';
 
 const route = useRoute();
 const router = useRouter();
@@ -116,7 +117,7 @@ const configs: Record<string, ScreenConfig> = {
             { title: 'AuraPods Pro Gen 2', meta: 'Invoice INV-2026-1184', value: '+72 units', status: 'Pending QC' }
         ],
         actions: [
-            { label: 'Scan Product', icon: Barcode },
+            { label: 'Scan Bill', icon: Barcode },
             { label: 'Attach Invoice', icon: Upload },
             { label: 'Save Receipt', icon: Save, primary: true }
         ]
@@ -546,6 +547,88 @@ const configs: Record<string, ScreenConfig> = {
 const activeConfig = computed(() => configs[String(route.name)] ?? configs['inventory-stock-in']);
 const icon = computed(() => icons[activeConfig.value.key]);
 const searchQuery = ref('');
+const stockInDraft = ref<StockInDraft | null>(null);
+
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(value);
+};
+
+const isStockInScreen = computed(() => route.name === 'inventory-stock-in');
+
+const stockInTotalQty = computed(() =>
+    stockInDraft.value?.items.reduce((total, item) => total + item.quantity, 0) ?? 0
+);
+
+const stockInCostValue = computed(() =>
+    stockInDraft.value?.items.reduce((total, item) => total + item.quantity * item.costPrice, 0) ?? 0
+);
+
+const displayedStats = computed(() => {
+    if (!isStockInScreen.value || !stockInDraft.value) return activeConfig.value.stats;
+
+    return [
+        { label: 'Scanned Qty', value: String(stockInTotalQty.value), tone: 'text-primary' },
+        { label: 'Lines', value: String(stockInDraft.value.items.length), tone: 'text-secondary' },
+        { label: 'Cost Value', value: formatCurrency(stockInCostValue.value), tone: 'text-tertiary' }
+    ];
+});
+
+const displayedFields = computed(() => {
+    if (!isStockInScreen.value || !stockInDraft.value) return activeConfig.value.fields;
+
+    const firstItem = stockInDraft.value.items[0];
+    return [
+        { label: 'Supplier', value: stockInDraft.value.supplier },
+        { label: 'Invoice Number', value: stockInDraft.value.invoiceNumber },
+        { label: 'Invoice Date', value: stockInDraft.value.invoiceDate, type: 'date' },
+        { label: 'Receiving Date', value: stockInDraft.value.receivedDate, type: 'date' },
+        { label: 'Product / SKU', value: firstItem ? `${firstItem.name} / ${firstItem.sku}` : '' },
+        { label: 'Quantity Received', value: String(stockInTotalQty.value), type: 'number' },
+        { label: 'Cost Value', value: String(stockInCostValue.value), type: 'number' }
+    ];
+});
+
+const displayedRows = computed(() => {
+    if (!isStockInScreen.value || !stockInDraft.value) return activeConfig.value.rows;
+
+    return stockInDraft.value.items.map((item) => ({
+        title: item.name,
+        meta: `${item.sku} • Batch ${item.batch} • Cost ${formatCurrency(item.costPrice)}`,
+        value: `+${item.quantity} units`,
+        status: stockInDraft.value?.status === 'received' ? 'Received' : 'Scanned'
+    }));
+});
+
+const scanStockInBill = async () => {
+    stockInDraft.value = await stockInService.scanSupplierBill();
+};
+
+const receiveStockInDraft = async () => {
+    if (!stockInDraft.value) {
+        await scanStockInBill();
+        return;
+    }
+
+    await stockInService.receiveDraft();
+    stockInDraft.value = null;
+};
+
+const handleAction = async (action: Action) => {
+    if (!isStockInScreen.value) return;
+
+    if (action.label === 'Scan Bill' || action.label === 'Attach Invoice') {
+        await scanStockInBill();
+        return;
+    }
+
+    if (action.primary) {
+        await receiveStockInDraft();
+    }
+};
+
+onMounted(async () => {
+    stockInDraft.value = await stockInService.getDraft();
+});
 </script>
 
 <template>
@@ -571,7 +654,7 @@ const searchQuery = ref('');
         </section>
 
         <section class="grid grid-cols-3 gap-3">
-            <SurfaceCard v-for="stat in activeConfig.stats" :key="stat.label" variant="low"
+            <SurfaceCard v-for="stat in displayedStats" :key="stat.label" variant="low"
                 class="p-4 rounded-3xl border border-surface-container-high/30">
                 <p class="text-[8px] font-black text-on-surface-variant/40 uppercase tracking-wider">{{ stat.label }}</p>
                 <h3 :class="['text-xl font-black mt-2 leading-none', stat.tone]">{{ stat.value }}</h3>
@@ -586,11 +669,23 @@ const searchQuery = ref('');
             </div>
             <SurfaceCard variant="low" class="p-5 space-y-4 border border-surface-container-high/30">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-black text-on-surface">Quick Entry</h3>
-                    <span class="text-[9px] font-black text-primary uppercase tracking-widest">Draft</span>
+                    <h3 class="text-sm font-black text-on-surface">
+                        {{ isStockInScreen ? 'Supplier Bill Data' : 'Quick Entry' }}
+                    </h3>
+                    <span class="text-[9px] font-black text-primary uppercase tracking-widest">
+                        {{ isStockInScreen && stockInDraft ? 'Auto Filled' : 'Draft' }}
+                    </span>
+                </div>
+                <div v-if="isStockInScreen && !stockInDraft"
+                    class="rounded-3xl border border-dashed border-surface-container-highest p-5 text-center space-y-2">
+                    <Barcode class="w-8 h-8 text-primary mx-auto" />
+                    <h4 class="text-sm font-black text-on-surface">Scan supplier bill</h4>
+                    <p class="text-[10px] font-bold text-on-surface-variant/45 uppercase tracking-wider">
+                        Products, invoice number, supplier, quantity and costs will auto-fill
+                    </p>
                 </div>
                 <div class="grid grid-cols-1 gap-3">
-                    <label v-for="field in activeConfig.fields" :key="field.label" class="space-y-1.5">
+                    <label v-for="field in displayedFields" :key="field.label" class="space-y-1.5">
                         <span class="text-[9px] font-black text-on-surface-variant/50 uppercase tracking-wider">
                             {{ field.label }}
                         </span>
@@ -599,7 +694,7 @@ const searchQuery = ref('');
                     </label>
                 </div>
                 <div class="grid grid-cols-3 gap-2 pt-1">
-                    <button v-for="action in activeConfig.actions" :key="action.label"
+                    <button v-for="action in activeConfig.actions" :key="action.label" @click="handleAction(action)"
                         :class="[
                             'min-h-16 rounded-2xl flex flex-col items-center justify-center gap-1.5 px-2 active:scale-95 transition-all',
                             action.primary ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-surface-container-high text-on-surface-variant'
@@ -619,9 +714,9 @@ const searchQuery = ref('');
                 <button class="text-[9px] font-black text-primary uppercase tracking-widest">View All</button>
             </div>
             <div class="bg-surface-container-low rounded-4xl border border-surface-container-high/30 overflow-hidden">
-                <div v-for="(row, index) in activeConfig.rows" :key="row.title" :class="[
+                <div v-for="(row, index) in displayedRows" :key="row.title" :class="[
                     'p-4 flex items-center justify-between gap-4 group active:scale-[0.98] transition-all',
-                    index !== activeConfig.rows.length - 1 && 'border-b border-surface-container-high/20'
+                    index !== displayedRows.length - 1 && 'border-b border-surface-container-high/20'
                 ]">
                     <div class="flex items-center gap-4 min-w-0">
                         <div class="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">

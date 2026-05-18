@@ -48,6 +48,7 @@ const authStore = useAuthStore();
 const menuItems = [
     { id: 'profile', icon: User, label: 'Owner Profile', sub: 'Account & business details', color: 'bg-primary/10 text-primary' },
     { id: 'subscription', icon: CreditCard, label: 'Subscription', sub: 'Plan expires in 24 days', color: 'bg-tertiary/10 text-tertiary' },
+    { id: 'bill-history', icon: History, label: 'Bill History', sub: 'Finalized bills and receipts', color: 'bg-primary/10 text-primary' },
     { id: 'settings', icon: Settings, label: 'Store Settings', sub: 'Taxes, currency & branding', color: 'bg-secondary/10 text-secondary' },
     { id: 'security', icon: Shield, label: 'Security & Access', sub: 'Staff permissions & login', color: 'bg-primary/10 text-primary' },
     { id: 'notifications-settings', icon: Bell, label: 'Notifications', sub: 'Alerts & report preferences', color: 'bg-tertiary/10 text-tertiary' },

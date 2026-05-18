@@ -27,6 +27,7 @@ const pageTitles: Record<string, string> = {
     'support': 'Concierge',
     'menu': 'System',
     'notifications': 'Pulses',
+    'bill-history': 'Bill History',
     'add-product': 'Inventory',
     'scanner': 'Optic Scan',
     'master-categories': 'Categories',
