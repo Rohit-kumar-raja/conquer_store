@@ -53,6 +53,7 @@ const stockHealth = [
 ];
 
 const maxRevenue = Math.max(...revenueData.map(item => item.revenue));
+const maxOrders = Math.max(...revenueData.map(item => item.orders));
 const maxProductUnits = Math.max(...topProducts.map(item => item.units));
 const totalRevenue = computed(() => revenueData.reduce((total, item) => total + item.revenue, 0));
 const totalOrders = computed(() => revenueData.reduce((total, item) => total + item.orders, 0));
@@ -79,6 +80,27 @@ const stockHealthGradient = computed(() => {
 
 const getRevenueHeight = (value: number) => {
     return showChart.value ? `${Math.max(12, (value / maxRevenue) * 100)}%` : '0%';
+};
+
+const buildLinePoints = (values: number[], max: number) => {
+    const step = values.length > 1 ? 100 / (values.length - 1) : 100;
+
+    return values.map((value, index) => {
+        const x = index * step;
+        const y = 100 - (value / max) * 72 - 10;
+
+        return {
+            x,
+            y
+        };
+    });
+};
+
+const revenueLinePoints = computed(() => buildLinePoints(revenueData.map(item => item.revenue), maxRevenue));
+const ordersLinePoints = computed(() => buildLinePoints(revenueData.map(item => item.orders), maxOrders));
+
+const toPolyline = (points: { x: number; y: number }[]) => {
+    return points.map(point => `${point.x},${point.y}`).join(' ');
 };
 
 const getProductWidth = (units: number) => {
@@ -157,18 +179,94 @@ onMounted(() => {
 
             <div class="h-56 flex items-end gap-3 border-b border-surface-container-highest/70 pb-3">
                 <div v-for="item in revenueData" :key="item.day" class="flex-1 h-full flex flex-col justify-end gap-2 group">
-                    <div class="relative flex-1 flex items-end">
+                    <div class="relative flex-1 h-full flex items-end">
                         <div
                             class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface-container-lowest border border-surface-container-high px-2 py-1 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none min-w-max z-10">
                             <p class="text-[9px] font-black text-on-surface">{{ formatCurrencyCompact(item.revenue) }}</p>
                             <p class="text-[8px] font-bold text-on-surface-variant/50">{{ item.orders }} bills</p>
                         </div>
-                        <div class="w-full rounded-t-2xl bg-surface-container-highest overflow-hidden flex items-end">
+                        <div class="w-full h-full min-h-[12px] rounded-t-2xl bg-surface-container-highest overflow-hidden flex items-end">
                             <div class="w-full rounded-t-2xl bg-primary transition-all duration-1000"
                                 :style="{ height: getRevenueHeight(item.revenue) }"></div>
                         </div>
                     </div>
                     <span class="text-[9px] font-black text-on-surface-variant/50 text-center">{{ item.day }}</span>
+                </div>
+            </div>
+        </SurfaceCard>
+
+        <SurfaceCard variant="low" class="p-5 rounded-4xl border border-surface-container-high/30">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-lg font-black text-on-surface tracking-tight">Revenue vs Orders</h3>
+                    <p class="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-wider">Two-line weekly trend</p>
+                </div>
+                <div class="flex items-center gap-2 text-primary">
+                    <BarChart3 class="w-4 h-4" />
+                    <span class="text-[10px] font-black">Dual axis</span>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest">
+                    <div class="flex items-center gap-2 text-primary">
+                        <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                        <span>Revenue</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-secondary">
+                        <span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+                        <span>Orders</span>
+                    </div>
+                </div>
+
+                <div class="relative h-56 rounded-3xl bg-surface-container-lowest border border-surface-container-highest/60 overflow-hidden">
+                    <div class="absolute inset-0 px-3 py-4 flex flex-col justify-between pointer-events-none">
+                        <div class="h-px bg-surface-container-highest/60"></div>
+                        <div class="h-px bg-surface-container-highest/60"></div>
+                        <div class="h-px bg-surface-container-highest/60"></div>
+                        <div class="h-px bg-surface-container-highest/60"></div>
+                    </div>
+
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="relative z-10 w-full h-full">
+                        <polyline
+                            :points="toPolyline(revenueLinePoints)"
+                            fill="none"
+                            class="transition-all duration-1000 stroke-primary"
+                            :class="showChart ? 'opacity-100' : 'opacity-0'"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                        <polyline
+                            :points="toPolyline(ordersLinePoints)"
+                            fill="none"
+                            class="transition-all duration-1000 stroke-secondary"
+                            :class="showChart ? 'opacity-100' : 'opacity-0'"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+
+                        <g v-for="(point, index) in revenueLinePoints" :key="`revenue-${revenueData[index].day}`"
+                            class="transition-all duration-1000"
+                            :class="showChart ? 'opacity-100' : 'opacity-0'">
+                            <circle :cx="point.x" :cy="point.y" r="1.9" class="fill-primary" />
+                            <circle :cx="point.x" :cy="point.y" r="3.6" fill="none" class="stroke-primary" stroke-width="0.8" opacity="0.25" />
+                        </g>
+
+                        <g v-for="(point, index) in ordersLinePoints" :key="`orders-${revenueData[index].day}`"
+                            class="transition-all duration-1000"
+                            :class="showChart ? 'opacity-100' : 'opacity-0'">
+                            <circle :cx="point.x" :cy="point.y" r="1.9" class="fill-secondary" />
+                            <circle :cx="point.x" :cy="point.y" r="3.6" fill="none" class="stroke-secondary" stroke-width="0.8" opacity="0.25" />
+                        </g>
+                    </svg>
+
+                    <div class="absolute inset-x-0 bottom-0 flex items-end justify-between px-3 pb-3">
+                        <span v-for="item in revenueData" :key="item.day" class="text-[9px] font-black text-on-surface-variant/50">
+                            {{ item.day }}
+                        </span>
+                    </div>
                 </div>
             </div>
         </SurfaceCard>

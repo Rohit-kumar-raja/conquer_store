@@ -7,21 +7,12 @@ import {
     ArrowLeft,
     Share2,
     ChevronDown,
-    BarChart3,
     BellRing,
-    Bookmark,
-    Boxes,
     CreditCard,
     FileText,
-    FolderOpen,
-    Package,
-    ScanLine,
     Settings,
     Shield,
-    ShoppingBag,
     Store,
-    Tags,
-    Truck,
     Users
 } from 'lucide-vue-next';
 import { useShopStore } from '../stores/useShopStore';
@@ -70,46 +61,43 @@ const pageTitles: Record<string, string> = {
     'inventory-import-export': 'Import / Export',
 };
 
-const pageIcons: Record<string, unknown> = {
-    dashboard: Store,
-    bill: ShoppingBag,
-    inventory: Boxes,
-    reports: BarChart3,
-    menu: FolderOpen,
-    profile: Users,
-    subscription: CreditCard,
-    settings: Settings,
-    security: Shield,
-    'notifications-settings': BellRing,
-    support: FileText,
-    'bill-history': FileText,
-    'add-product': Package,
-    'edit-product': Package,
-    scanner: ScanLine,
-    'master-categories': Tags,
-    'master-brands': Bookmark,
-    'master-suppliers': Truck,
-    'master-customers': Users,
-    'inventory-stock-in': Package,
-    'inventory-stock-out': Package,
-    'inventory-movements': FileText,
-    'inventory-purchase-orders': FileText,
-    'inventory-goods-received': FileText,
-    'inventory-barcodes': ScanLine,
-    'inventory-batches': Calendar,
-    'inventory-low-stock': BarChart3,
-    'inventory-transfers': Truck,
-    'inventory-stock-count': Check,
-    'inventory-variants': Tags,
-    'inventory-supplier-products': Truck,
-    'inventory-valuation': CreditCard,
-    'inventory-dead-stock': Package,
-    'inventory-returns': RotateCcw,
-    'inventory-reorder-rules': Settings,
-    'inventory-import-export': FileText,
+const pageSubtitles: Record<string, string> = {
+    profile: 'Account and business details',
+    subscription: 'Plan, billing, and usage',
+    settings: 'Taxes, currency, and branding',
+    security: 'Staff permissions and access',
+    'notifications-settings': 'Alerts and report preferences',
+    support: 'Docs, chat, and feedback',
+    notifications: 'System alerts and activity',
+    'bill-history': 'Saved bills and receipts',
+    scanner: 'Scan products and bills',
+    'master-categories': 'Manage product categories',
+    'master-brands': 'Manage brand catalog',
+    'master-suppliers': 'Manage vendor records',
+    'master-customers': 'Manage customer records',
+    'product-detail': 'Catalog details and stock view',
+    'edit-product': 'Update product information',
+    'add-product': 'Create a new product record',
+    'inventory-stock-in': 'Receive stock from supplier bills',
+    'inventory-stock-out': 'Adjust stock out and losses',
+    'inventory-movements': 'Track stock movement history',
+    'inventory-purchase-orders': 'Create supplier purchase orders',
+    'inventory-goods-received': 'Confirm goods received notes',
+    'inventory-barcodes': 'Print and manage codes',
+    'inventory-batches': 'Batch and expiry tracking',
+    'inventory-low-stock': 'Monitor low stock alerts',
+    'inventory-transfers': 'Move stock between locations',
+    'inventory-stock-count': 'Run stock audit counts',
+    'inventory-variants': 'Manage product variants',
+    'inventory-supplier-products': 'Map products to suppliers',
+    'inventory-valuation': 'Review stock value and margin',
+    'inventory-dead-stock': 'Review slow moving items',
+    'inventory-returns': 'Handle customer and supplier returns',
+    'inventory-reorder-rules': 'Set min and max stock rules',
+    'inventory-import-export': 'Bulk import and export data',
 };
 
-const currentIcon = computed(() => pageIcons[currentScreen.value] || Store);
+const pageSubtitle = computed(() => pageSubtitles[currentScreen.value] || 'Operational Mode');
 
 const isMainScreen = computed(() =>
     ['dashboard', 'bill', 'inventory', 'reports', 'menu'].includes(currentScreen.value)
@@ -139,10 +127,6 @@ const isMainScreen = computed(() =>
             <!-- Contextual Branding -->
             <div @click="shopStore.toggleSwitcher" class="flex flex-col cursor-pointer group">
                 <div class="flex items-center gap-1.5">
-                    <div v-if="!isMainScreen"
-                        class="w-9 h-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                        <component :is="currentIcon" class="w-4.5 h-4.5" />
-                    </div>
                     <h1
                         class="text-base font-black text-on-surface leading-tight tracking-tight group-hover:text-primary transition-all">
                         {{ isMainScreen ? shopStore.selectedShop.name : (pageTitles[currentScreen] || 'Layer') }}
@@ -151,7 +135,7 @@ const isMainScreen = computed(() =>
                         class="w-3.5 h-3.5 text-on-surface-variant group-hover:translate-y-0.5 transition-transform" />
                 </div>
                 <p class="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">
-                    {{ isMainScreen ? shopStore.selectedShop.branch : 'Operational Mode' }}
+                    {{ isMainScreen ? shopStore.selectedShop.branch : pageSubtitle }}
                 </p>
             </div>
         </div>
