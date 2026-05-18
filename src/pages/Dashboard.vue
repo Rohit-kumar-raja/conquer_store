@@ -1,29 +1,42 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import {
     AlertTriangle,
     BarChart3,
     ChevronRight,
-    Clock,
     IndianRupee,
     Package,
     PackagePlus,
     Plus,
     QrCode,
     Receipt,
-    Repeat,
-    ShoppingBag,
     Sparkles,
     TrendingUp,
     Users
 } from 'lucide-vue-next';
 import { SurfaceCard } from '../components';
 import { useShopStore } from '../stores/useShopStore';
+import { billService, type BillRecord } from '../services/billService';
 
 const router = useRouter();
 const shopStore = useShopStore();
 const showChart = ref(false);
+const allBills = ref<BillRecord[]>([]);
+const recentBills = computed(() => allBills.value.slice(0, 5));
+
+const formatCurrency = (val: number) => {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+};
+
+const formatDate = (value: string) => {
+    return new Intl.DateTimeFormat('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(new Date(value));
+};
 
 const revenueTrend = [
     { label: '8a', value: 28 },
@@ -54,11 +67,7 @@ const topProducts = [
     { name: 'MagSafe Gen 2', sales: 64, revenue: '₹2.23L', trend: '-2%', image: 'https://picsum.photos/seed/mag/100/100' }
 ];
 
-const recentActivity = [
-    { type: 'sale', id: '#TX-9021', label: 'Studio Pro Wireless', time: '2m ago', amount: '₹14,290' },
-    { type: 'stock', id: 'STK-1184', label: 'Stock received from Lumina', time: '15m ago', amount: '+48' },
-    { type: 'transfer', id: 'TR-2026-018', label: 'Mumbai to Delhi dispatch', time: '45m ago', amount: '86 units' }
-];
+
 
 const branchHealth = [
     { label: 'Sell-through', value: '68%', tone: 'text-primary', icon: TrendingUp },
@@ -66,10 +75,11 @@ const branchHealth = [
     { label: 'Stock Risk', value: '12', tone: 'text-error', icon: AlertTriangle }
 ];
 
-onMounted(() => {
+onMounted(async () => {
     setTimeout(() => {
         showChart.value = true;
     }, 80);
+    allBills.value = await billService.getBillHistory();
 });
 </script>
 
@@ -232,35 +242,47 @@ onMounted(() => {
         <SurfaceCard variant="low" class="p-5 rounded-4xl border border-surface-container-high/30">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h3 class="text-lg font-black text-on-surface tracking-tight">Recent Activity</h3>
-                    <p class="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-wider">Latest sales and inventory events</p>
+                    <h3 class="text-lg font-black text-on-surface tracking-tight">Recent Bills</h3>
+                    <p class="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-wider">Latest finalized invoices</p>
                 </div>
-                <Clock class="w-4 h-4 text-on-surface-variant/30" />
+                <button @click="router.push({ name: 'bill-history' })"
+                    class="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-1">
+                    View All
+                    <ChevronRight class="w-3 h-3" />
+                </button>
             </div>
 
-            <div class="space-y-1">
-                <div v-for="(log, index) in recentActivity" :key="log.id" :class="[
+            <div v-if="recentBills.length" class="space-y-1">
+                <div v-for="(bill, index) in recentBills" :key="bill.id" :class="[
                     'flex items-center justify-between gap-4 py-3.5',
-                    index !== recentActivity.length - 1 && 'border-b border-surface-container-high/30'
+                    index !== recentBills.length - 1 && 'border-b border-surface-container-high/30'
                 ]">
                     <div class="flex items-center gap-4 min-w-0">
-                        <div :class="[
-                            'w-10 h-10 rounded-2xl flex items-center justify-center shrink-0',
-                            log.type === 'sale' ? 'bg-primary/10 text-primary' : log.type === 'stock' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'
-                        ]">
-                            <ShoppingBag v-if="log.type === 'sale'" class="w-5 h-5" />
-                            <Package v-else-if="log.type === 'stock'" class="w-5 h-5" />
-                            <Repeat v-else class="w-5 h-5" />
+                        <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 bg-primary/10 text-primary">
+                            <Receipt class="w-5 h-5" />
                         </div>
                         <div class="min-w-0">
-                            <p class="text-xs font-black text-on-surface truncate">{{ log.label }}</p>
+                            <p class="text-xs font-black text-on-surface truncate">{{ bill.invoiceNumber }}</p>
                             <p class="text-[9px] font-bold text-on-surface-variant/40 uppercase tracking-widest mt-0.5">
-                                {{ log.id }} • {{ log.time }}
+                                {{ bill.customer.name }} • {{ formatDate(bill.createdAt) }}
                             </p>
                         </div>
                     </div>
-                    <span class="text-sm font-black text-on-surface shrink-0">{{ log.amount }}</span>
+                    <div class="text-right shrink-0">
+                        <span class="text-sm font-black text-on-surface">{{ formatCurrency(bill.total) }}</span>
+                        <p class="text-[8px] font-black uppercase tracking-wider mt-0.5"
+                            :class="bill.paymentMethod === 'qr' ? 'text-primary' : 'text-secondary'">
+                            {{ bill.paymentMethod === 'qr' ? 'QR' : 'Cash' }}
+                        </p>
+                    </div>
                 </div>
+            </div>
+
+            <div v-else class="py-8 text-center space-y-2">
+                <Receipt class="w-10 h-10 text-on-surface-variant/15 mx-auto" />
+                <p class="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-wider">
+                    No bills yet — create your first bill
+                </p>
             </div>
         </SurfaceCard>
 
