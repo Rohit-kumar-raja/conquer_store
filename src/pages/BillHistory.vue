@@ -105,7 +105,9 @@ onMounted(async () => {
                     </div>
                     <div class="text-right shrink-0">
                         <p class="text-base font-black text-on-surface">{{ formatCurrency(bill.total) }}</p>
-                        <p class="text-[9px] font-black text-primary uppercase tracking-wider">{{ bill.status }}</p>
+                        <p class="text-[9px] font-black text-primary uppercase tracking-wider">
+                            {{ bill.status }} • {{ bill.paymentMethod === 'qr' ? 'QR' : 'Cash' }}
+                        </p>
                     </div>
                 </div>
 

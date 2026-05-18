@@ -97,7 +97,7 @@ export const stockInService = {
         return readDraft();
     },
 
-    async scanSupplierBill(): Promise<StockInDraft> {
+    async scanSupplierBill(_billImage?: string): Promise<StockInDraft> {
         const draft = createMockScannedBill();
         writeDraft(draft);
         return draft;

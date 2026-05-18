@@ -13,6 +13,8 @@ export interface BillCustomer {
     phone: string;
 }
 
+export type PaymentMethod = 'qr' | 'cash';
+
 export interface BillRecord {
     id: string;
     invoiceNumber: string;
@@ -21,6 +23,7 @@ export interface BillRecord {
     subtotal: number;
     gst: number;
     total: number;
+    paymentMethod: PaymentMethod;
     createdAt: string;
     status: 'paid';
 }
@@ -127,7 +130,7 @@ export const billService = {
         return readBillHistory().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     },
 
-    async finalizeDraft(customer: BillCustomer): Promise<BillRecord | null> {
+    async finalizeDraft(customer: BillCustomer, paymentMethod: PaymentMethod): Promise<BillRecord | null> {
         const items = readStoredBillItems().filter((item) => item.qty > 0);
         if (!items.length) return null;
 
@@ -141,6 +144,7 @@ export const billService = {
             subtotal,
             gst,
             total: subtotal + gst,
+            paymentMethod,
             createdAt: new Date().toISOString(),
             status: 'paid'
         };

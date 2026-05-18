@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import {
     ArrowLeft,
     Camera as CameraIcon,
@@ -13,8 +13,10 @@ import {
 import { ScannerView } from '../components';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { billService, type ScannedBillProduct } from '../services/billService';
+import { stockInService, type StockInDraft } from '../services/stockInService';
 
 const router = useRouter();
+const route = useRoute();
 const scannerRef = ref();
 
 interface CapturedProduct {
@@ -37,9 +39,12 @@ const qualityOptions: Array<{ id: ScanQuality; label: string; captureQuality: nu
 
 const selectedQuality = ref<ScanQuality>('hd');
 const capturedProducts = ref<CapturedProduct[]>([]);
+const scannedStockInDraft = ref<StockInDraft | null>(null);
 const isCapturing = ref(false);
 
+const isStockInBillMode = computed(() => route.query.mode === 'stock-in-bill');
 const readyProducts = computed(() => capturedProducts.value.filter((product) => !product.loading));
+const scannedCount = computed(() => isStockInBillMode.value ? (scannedStockInDraft.value?.items.length ?? 0) : readyProducts.value.length);
 const activeQuality = computed(() => qualityOptions.find((option) => option.id === selectedQuality.value) ?? qualityOptions[1]);
 
 const parsePrice = (price: string) => Number(price.replace(/[^\d.]/g, '')) || 0;
@@ -59,6 +64,12 @@ const getScannedBillProducts = (): ScannedBillProduct[] => {
 };
 
 const finalizeTransaction = async () => {
+    if (isStockInBillMode.value) {
+        if (!scannedStockInDraft.value) return;
+        router.push({ name: 'inventory-stock-in' });
+        return;
+    }
+
     await billService.addScannedProducts(getScannedBillProducts());
     router.push({ name: 'bill' });
 };
@@ -77,7 +88,23 @@ const capture = async () => {
             loading: true
         });
 
-        setTimeout(() => {
+        setTimeout(async () => {
+            if (isStockInBillMode.value) {
+                const draft = await stockInService.scanSupplierBill(photoData || undefined);
+                scannedStockInDraft.value = draft;
+                capturedProducts.value = [{
+                    id: tempId,
+                    image: photoData || undefined,
+                    name: `${draft.supplier} Bill`,
+                    price: `${draft.items.length} lines`,
+                    sku: draft.invoiceNumber,
+                    stock: draft.items.reduce((total, item) => total + item.quantity, 0),
+                    loading: false
+                }];
+                isCapturing.value = false;
+                return;
+            }
+
             const products = [
                 { name: 'Organic Almond Milk (1L)', price: '₹140', sku: 'MLK-ORG-01', stock: 24 },
                 { name: 'AuraPods Pro Gen 2', price: '₹4,999', sku: 'AUD-APP-G2', stock: 12 },
@@ -106,6 +133,9 @@ const capture = async () => {
 
 const removeProduct = (id: number) => {
     capturedProducts.value = capturedProducts.value.filter(p => p.id !== id);
+    if (isStockInBillMode.value) {
+        scannedStockInDraft.value = null;
+    }
 };
 </script>
 
@@ -126,11 +156,13 @@ const removeProduct = (id: number) => {
                 <div
                     class="h-11 px-4 rounded-2xl bg-black/45 backdrop-blur-xl border border-white/10 flex items-center gap-2 text-white">
                     <Maximize2 class="w-4 h-4 text-primary" />
-                    <span class="text-[10px] font-black uppercase tracking-[0.2em]">Full Screen Scan</span>
+                    <span class="text-[10px] font-black uppercase tracking-[0.2em]">
+                        {{ isStockInBillMode ? 'Scan Stock-In Bill' : 'Full Screen Scan' }}
+                    </span>
                 </div>
 
                 <div class="w-11 h-11 rounded-2xl bg-black/45 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white">
-                    <span class="text-[10px] font-black">{{ readyProducts.length }}</span>
+                    <span class="text-[10px] font-black">{{ scannedCount }}</span>
                 </div>
             </div>
         </div>
@@ -161,7 +193,12 @@ const removeProduct = (id: number) => {
                                 </h4>
                             </div>
                             <p class="text-[9px] font-bold text-white/45 uppercase tracking-widest mt-1 truncate">
-                                {{ product.sku }} • {{ product.price }} • {{ product.stock }} left
+                                <template v-if="isStockInBillMode">
+                                    {{ product.sku }} • {{ product.price }} • {{ product.stock }} units detected
+                                </template>
+                                <template v-else>
+                                    {{ product.sku }} • {{ product.price }} • {{ product.stock }} left
+                                </template>
                             </p>
                         </template>
                     </div>
@@ -196,10 +233,12 @@ const removeProduct = (id: number) => {
         </button>
 
         <!-- Small Finalize Action -->
-        <button v-if="readyProducts.length" @click="finalizeTransaction"
+        <button v-if="isStockInBillMode ? scannedStockInDraft : readyProducts.length" @click="finalizeTransaction"
             class="absolute right-5 bottom-12 z-40 h-12 px-4 rounded-2xl bg-white text-primary shadow-2xl flex items-center gap-2 active:scale-95 transition-all">
             <Receipt class="w-4 h-4" />
-            <span class="text-[10px] font-black uppercase tracking-widest">Bill {{ readyProducts.length }}</span>
+            <span class="text-[10px] font-black uppercase tracking-widest">
+                {{ isStockInBillMode ? 'Stock In' : `Bill ${readyProducts.length}` }}
+            </span>
         </button>
     </div>
 </template>

@@ -6,7 +6,7 @@ import BillUserSelect from '../components/bill/BillUserSelect.vue';
 import BillItemList from '../components/bill/BillItemList.vue';
 import BillOffers from '../components/bill/BillOffers.vue';
 import BillSummary from '../components/bill/BillSummary.vue';
-import { billService, type BillItem } from '../services/billService';
+import { billService, type BillItem, type PaymentMethod } from '../services/billService';
 
 const router = useRouter();
 const items = ref<BillItem[]>([]);
@@ -20,6 +20,9 @@ const users = ref([
 ]);
 
 const selectedUser = ref(users.value[0]);
+const paymentMethod = ref<PaymentMethod | null>(null);
+
+type BillUser = typeof users.value[number];
 
 const loadBillItems = async () => {
     items.value = await billService.getDraftItems();
@@ -36,6 +39,11 @@ const removeItem = async (id: number) => {
     items.value = await billService.removeDraftItem(id);
 };
 
+const createUser = (user: BillUser) => {
+    users.value = [user, ...users.value];
+    selectedUser.value = user;
+};
+
 const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(val);
 };
@@ -45,7 +53,9 @@ const gst = computed(() => subtotal.value * 0.18);
 const total = computed(() => subtotal.value + gst.value);
 
 const finalizeBill = async () => {
-    const bill = await billService.finalizeDraft(selectedUser.value);
+    if (!paymentMethod.value) return;
+
+    const bill = await billService.finalizeDraft(selectedUser.value, paymentMethod.value);
     if (!bill) return;
 
     items.value = [];
@@ -62,7 +72,7 @@ onMounted(async () => {
     <div class="px-5 pt-2 space-y-4 pb-40 max-w-md mx-auto">
         <BillHeader invoice-number="#INVOICE-001" />
 
-        <BillUserSelect v-model="selectedUser" :users="users" />
+        <BillUserSelect v-model="selectedUser" :users="users" @create-user="createUser" />
 
         <BillItemList :items="items" :format-currency="formatCurrency" @update-qty="updateQty"
             @remove-item="removeItem" />
@@ -70,7 +80,7 @@ onMounted(async () => {
         <BillOffers v-if="items.length" />
 
         <BillSummary :subtotal="subtotal" :gst="gst" :total="total" :format-currency="formatCurrency"
-            @finalize="finalizeBill" />
+            v-model:payment-method="paymentMethod" @finalize="finalizeBill" />
     </div>
 </template>
 

@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Select from 'primevue/select';
-import { User, UserPlus, ChevronRight, Search } from 'lucide-vue-next';
-import { useRouter } from 'vue-router';
-
-const router = useRouter();
+import { Check, User, UserPlus, ChevronRight, Search } from 'lucide-vue-next';
 
 interface UserType {
     name: string;
@@ -17,9 +14,25 @@ const props = defineProps<{
     users: UserType[];
 }>();
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'createUser']);
 
 const internalSelectedUser = ref(props.modelValue);
+const searchQuery = ref('');
+const formName = ref('');
+const formPhone = ref('');
+const showCreateSheet = ref(false);
+
+const normalizedSearch = computed(() => searchQuery.value.trim().toLowerCase());
+const hasMatchingUser = computed(() => {
+    if (!normalizedSearch.value) return true;
+
+    return props.users.some((user) =>
+        user.name.toLowerCase().includes(normalizedSearch.value) ||
+        user.phone.replace(/\s/g, '').includes(normalizedSearch.value.replace(/\s/g, ''))
+    );
+});
+
+const shouldShowCreateForm = computed(() => !!normalizedSearch.value && !hasMatchingUser.value);
 
 watch(() => props.modelValue, (newVal) => {
     internalSelectedUser.value = newVal;
@@ -28,12 +41,52 @@ watch(() => props.modelValue, (newVal) => {
 watch(internalSelectedUser, (newVal) => {
     emit('update:modelValue', newVal);
 });
+
+const handleFilter = (event: { value?: string }) => {
+    searchQuery.value = event.value || '';
+
+    const digits = searchQuery.value.replace(/\D/g, '');
+    if (digits.length >= 5) {
+        formPhone.value = searchQuery.value;
+        if (!formName.value) formName.value = '';
+        return;
+    }
+
+    formName.value = searchQuery.value;
+};
+
+watch(shouldShowCreateForm, (shouldShow) => {
+    if (shouldShow) {
+        showCreateSheet.value = true;
+    }
+});
+
+const createCustomer = () => {
+    if (!formName.value.trim() || !formPhone.value.trim()) return;
+
+    const newUser: UserType = {
+        id: `cus-${Date.now()}`,
+        name: formName.value.trim(),
+        phone: formPhone.value.trim()
+    };
+
+    emit('createUser', newUser);
+    internalSelectedUser.value = newUser;
+    searchQuery.value = '';
+    formName.value = '';
+    formPhone.value = '';
+    showCreateSheet.value = false;
+};
+
+const closeCreateSheet = () => {
+    showCreateSheet.value = false;
+};
 </script>
 
 <template>
     <section>
         <Select v-model="internalSelectedUser" :options="users" filter optionLabel="name" placeholder="Select Customer"
-            autofocus
+            autofocus @filter="handleFilter"
             class="w-full h-16 rounded-4xl bg-surface-container-low border border-surface-container-high/30 flex items-center px-2 group transition-all"
             filter-placeholder="Search by Name or Phone..." :pt="{
                 root: { class: 'focus:ring-2 focus:ring-primary/20 transition-all' },
@@ -78,16 +131,14 @@ watch(internalSelectedUser, (newVal) => {
                 </div>
             </template>
             <template #emptyfilter>
-                <div @click="router.push({ name: 'profile' })"
-                    class="p-6 flex flex-col items-center justify-center gap-3 bg-primary/5 rounded-4xl border border-dashed border-primary/20 cursor-pointer hover:bg-primary/10 transition-all">
+                <div
+                    class="p-5 flex flex-col items-center justify-center gap-3 bg-primary/5 rounded-4xl border border-dashed border-primary/20">
                     <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                         <UserPlus class="w-6 h-6" />
                     </div>
                     <div class="text-center">
-                        <p class="text-sm font-black text-on-surface italic uppercase tracking-tight">Customer Not Found
-                        </p>
-                        <p class="text-[9px] font-bold text-primary uppercase tracking-widest mt-1">Create New Account?
-                        </p>
+                        <p class="text-sm font-black text-on-surface uppercase tracking-tight">Customer Not Found</p>
+                        <p class="text-[9px] font-bold text-primary uppercase tracking-widest mt-1">Use form below</p>
                     </div>
                 </div>
             </template>
@@ -98,5 +149,55 @@ watch(internalSelectedUser, (newVal) => {
                 </div>
             </template>
         </Select>
+
+        <Teleport to="body">
+            <Transition name="fade">
+                <div v-if="showCreateSheet" class="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm"
+                    @click="closeCreateSheet"></div>
+            </Transition>
+
+            <Transition name="slide-up">
+                <div v-if="showCreateSheet" class="fixed bottom-0 left-0 right-0 z-[101] max-w-md mx-auto">
+                    <div
+                        class="bg-surface-container-lowest rounded-t-[2rem] shadow-2xl border-t border-surface-container-high/30 p-5 space-y-4">
+                        <div class="flex justify-center">
+                            <div class="w-10 h-1 rounded-full bg-on-surface-variant/15"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                                    <UserPlus class="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-black text-on-surface">Create Customer</h3>
+                                    <p class="text-[9px] font-bold text-on-surface-variant/45 uppercase tracking-wider">
+                                        Add name and number only
+                                    </p>
+                                </div>
+                            </div>
+                            <button @click="closeCreateSheet"
+                                class="w-9 h-9 rounded-xl bg-surface-container-high/60 text-on-surface-variant flex items-center justify-center">
+                                <ChevronRight class="w-5 h-5 rotate-90" />
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-3">
+                            <input v-model="formName" type="text" placeholder="Customer name"
+                                class="w-full bg-surface-container-high/50 text-on-surface rounded-2xl px-4 py-3 text-sm font-bold placeholder:text-on-surface-variant/30 outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                            <input v-model="formPhone" type="tel" placeholder="Phone number"
+                                class="w-full bg-surface-container-high/50 text-on-surface rounded-2xl px-4 py-3 text-sm font-bold placeholder:text-on-surface-variant/30 outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                        </div>
+
+                        <button @click="createCustomer"
+                            class="w-full h-12 rounded-2xl bg-primary text-white flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-40"
+                            :disabled="!formName.trim() || !formPhone.trim()">
+                            <Check class="w-4 h-4" />
+                            Create & Select
+                        </button>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </section>
 </template>

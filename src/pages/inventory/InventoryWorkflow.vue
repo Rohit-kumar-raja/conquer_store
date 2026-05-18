@@ -600,7 +600,7 @@ const displayedRows = computed(() => {
 });
 
 const scanStockInBill = async () => {
-    stockInDraft.value = await stockInService.scanSupplierBill();
+    await router.push({ name: 'scanner', query: { mode: 'stock-in-bill' } });
 };
 
 const receiveStockInDraft = async () => {
