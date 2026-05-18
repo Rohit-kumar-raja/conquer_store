@@ -8,7 +8,13 @@ import {
     Edit3,
     AlertCircle,
     Plus,
-    X
+    X,
+    PackagePlus,
+    PackageMinus,
+    History,
+    ClipboardList,
+    AlertTriangle,
+    Repeat
 } from 'lucide-vue-next';
 import { cn } from '../lib/utils';
 import { SurfaceCard } from '../components';
@@ -78,6 +84,15 @@ const statusConfig = {
 
 const searchQuery = ref('');
 const selectedFilter = ref<'all' | 'out' | 'low'>('all');
+
+const inventoryTools = [
+    { route: 'inventory-stock-in', label: 'Stock In', icon: PackagePlus, color: 'bg-primary/10 text-primary' },
+    { route: 'inventory-stock-out', label: 'Stock Out', icon: PackageMinus, color: 'bg-error/10 text-error' },
+    { route: 'inventory-movements', label: 'History', icon: History, color: 'bg-secondary/10 text-secondary' },
+    { route: 'inventory-purchase-orders', label: 'PO', icon: ClipboardList, color: 'bg-tertiary/10 text-tertiary' },
+    { route: 'inventory-low-stock', label: 'Alerts', icon: AlertTriangle, color: 'bg-error/10 text-error' },
+    { route: 'inventory-transfers', label: 'Transfer', icon: Repeat, color: 'bg-primary/10 text-primary' }
+];
 
 const filteredStock = computed(() => {
     return stockData.filter(item => {
@@ -151,6 +166,19 @@ const getFilterClass = (filter: 'all' | 'out' | 'low') => {
             </button>
         </div>
 
+        <!-- Inventory Tools -->
+        <div class="grid grid-cols-3 gap-3">
+            <button v-for="tool in inventoryTools" :key="tool.route" @click="router.push({ name: tool.route })"
+                class="bg-surface-container-low border border-surface-container-high/30 rounded-3xl p-3 flex flex-col items-center gap-2 active:scale-[0.98] transition-all">
+                <div :class="['w-10 h-10 rounded-2xl flex items-center justify-center', tool.color]">
+                    <component :is="tool.icon" class="w-5 h-5" />
+                </div>
+                <span class="text-[9px] font-black uppercase tracking-wider text-on-surface-variant/60">
+                    {{ tool.label }}
+                </span>
+            </button>
+        </div>
+
         <!-- Stock List -->
         <div v-if="filteredStock.length > 0" class="space-y-4">
             <SurfaceCard v-for="item in filteredStock" :key="item.id"
@@ -193,11 +221,12 @@ const getFilterClass = (filter: 'all' | 'out' | 'low') => {
                             item.category }}</p>
                     </div>
                     <div class="flex gap-2">
-                        <button
+                        <button @click.stop="router.push({ name: 'edit-product', params: { id: item.id } })"
                             class="p-2.5 rounded-xl bg-surface-container-high text-on-surface-variant hover:text-primary transition-colors">
                             <Edit3 class="w-4 h-4" />
                         </button>
-                        <button v-if="item.status === 'out'" class="p-2.5 rounded-xl bg-error/10 text-error">
+                        <button v-if="item.status === 'out'" @click.stop="router.push({ name: 'inventory-low-stock' })"
+                            class="p-2.5 rounded-xl bg-error/10 text-error">
                             <AlertCircle class="w-4 h-4" />
                         </button>
                     </div>

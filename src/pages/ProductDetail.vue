@@ -8,11 +8,14 @@ import {
     TrendingUp,
     IndianRupee
 } from 'lucide-vue-next';
+import { useRoute, useRouter } from 'vue-router';
 import { SurfaceCard, IntelligenceBadge, Button } from '../components';
 import { cn } from '../lib/utils';
 import appIcon from '../assets/icon.png';
 
 const emit = defineEmits(['navigate']);
+const route = useRoute();
+const router = useRouter();
 
 const getRowIconClass = (variant: string) => {
     return cn(
@@ -167,13 +170,14 @@ const getRowIconClass = (variant: string) => {
         <!-- Action Bar -->
         <div
             class="fixed bottom-0 left-0 right-0 w-full bg-surface/80 backdrop-blur-2xl border-t border-surface-container-high px-6 pb-10 pt-4 z-50 flex gap-4 max-w-md mx-auto">
-            <Button variant="secondary" class="flex-1">
+            <Button variant="secondary" class="flex-1"
+                @click="router.push({ name: 'edit-product', params: { id: route.params.id } })">
                 <template #icon>
                     <Edit3 class="w-5 h-5" />
                 </template>
                 Edit Item
             </Button>
-            <Button class="flex-1">
+            <Button class="flex-1" @click="router.push({ name: 'inventory-stock-out' })">
                 <template #icon>
                     <QrCode class="w-5 h-5" />
                 </template>

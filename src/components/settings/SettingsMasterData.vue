@@ -22,13 +22,12 @@ const formatCount = (count: number) => count >= 1000 ? (count / 1000).toFixed(1)
 </script>
 
 <template>
-    <section class="space-y-4">
+    <section class="space-y-3">
         <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-1.5 h-6 bg-tertiary rounded-full"></div>
-                <h3 class="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant/70">Store Master Data
-                </h3>
-            </div>
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 px-1">
+                Store Master Data
+            </h3>
+            <span class="text-[9px] font-black text-primary uppercase tracking-widest">Directory</span>
         </div>
 
         <div class="bg-surface-container-low rounded-4xl border border-surface-container-high/30 overflow-hidden">

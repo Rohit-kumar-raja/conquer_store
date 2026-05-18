@@ -60,9 +60,99 @@ const routes: RouteRecordRaw[] = [
                 name: 'product-detail'
             },
             {
+                path: 'product/:id/edit',
+                component: () => import('../pages/EditProduct.vue'),
+                name: 'edit-product'
+            },
+            {
                 path: 'product/add',
                 component: () => import('../pages/AddProduct.vue'),
                 name: 'add-product'
+            },
+            {
+                path: 'inventory/stock-in',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-stock-in'
+            },
+            {
+                path: 'inventory/stock-out',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-stock-out'
+            },
+            {
+                path: 'inventory/movements',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-movements'
+            },
+            {
+                path: 'inventory/purchase-orders',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-purchase-orders'
+            },
+            {
+                path: 'inventory/goods-received',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-goods-received'
+            },
+            {
+                path: 'inventory/barcodes',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-barcodes'
+            },
+            {
+                path: 'inventory/batches',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-batches'
+            },
+            {
+                path: 'inventory/low-stock',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-low-stock'
+            },
+            {
+                path: 'inventory/transfers',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-transfers'
+            },
+            {
+                path: 'inventory/stock-count',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-stock-count'
+            },
+            {
+                path: 'inventory/variants',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-variants'
+            },
+            {
+                path: 'inventory/supplier-products',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-supplier-products'
+            },
+            {
+                path: 'inventory/valuation',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-valuation'
+            },
+            {
+                path: 'inventory/dead-stock',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-dead-stock'
+            },
+            {
+                path: 'inventory/returns',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-returns'
+            },
+            {
+                path: 'inventory/reorder-rules',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-reorder-rules'
+            },
+            {
+                path: 'inventory/import-export',
+                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                name: 'inventory-import-export'
             },
             {
                 path: 'menu',

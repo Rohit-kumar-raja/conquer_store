@@ -7,14 +7,16 @@ const themeStore = useThemeStore();
 </script>
 
 <template>
-    <section class="space-y-4">
-        <div class="flex items-center gap-3">
-            <div class="w-1.5 h-6 bg-primary rounded-full"></div>
-            <h3 class="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant/70">Appearance</h3>
+    <section class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40">Appearance</h3>
+            <span class="text-[9px] font-black text-primary uppercase tracking-widest">
+                {{ themeStore.isDark ? 'Dark' : 'Light' }}
+            </span>
         </div>
 
-        <SurfaceCard variant="low" class="p-0 overflow-hidden border border-surface-container-high/50">
-            <div class="p-6 flex items-center justify-between">
+        <SurfaceCard variant="low" class="p-0 rounded-4xl overflow-hidden border border-surface-container-high/30">
+            <div class="p-5 flex items-center justify-between">
                 <div class="flex items-center gap-5">
                     <div class="w-12 h-12 rounded-2xl flex items-center justify-center border border-primary/5 transition-colors"
                         :class="themeStore.isDark ? 'bg-primary/20 text-primary' : 'bg-primary/10 text-primary'">
@@ -22,8 +24,8 @@ const themeStore = useThemeStore();
                         <Sun v-else class="w-6 h-6" />
                     </div>
                     <div>
-                        <p class="font-bold text-on-surface text-lg">Dark Mode</p>
-                        <p class="text-xs text-on-surface-variant font-medium">
+                        <p class="font-black text-on-surface text-sm">Display Mode</p>
+                        <p class="text-[10px] text-on-surface-variant/45 font-bold mt-0.5">
                             {{ themeStore.isDark ? 'Dark theme active' : 'Light theme active' }}
                         </p>
                     </div>

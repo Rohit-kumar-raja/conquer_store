@@ -17,7 +17,23 @@ import {
     Tags,
     Award,
     Truck,
-    Users
+    Users,
+    PackagePlus,
+    PackageMinus,
+    History,
+    ClipboardList,
+    ClipboardCheck,
+    Barcode,
+    CalendarClock,
+    AlertTriangle,
+    Repeat,
+    CheckCircle2,
+    Layers,
+    IndianRupee,
+    ArchiveX,
+    RotateCcw,
+    SlidersHorizontal,
+    FileSpreadsheet
 } from 'lucide-vue-next';
 import { SurfaceCard } from '../components';
 import { useShopStore } from '../stores/useShopStore';
@@ -45,6 +61,26 @@ const masterDataItems = [
     { id: 'master-customers', icon: Users, label: 'Customers', sub: 'Customer directory', color: 'bg-primary/10 text-primary' },
 ];
 
+const inventoryItems = [
+    { id: 'inventory-stock-in', icon: PackagePlus, label: 'Stock In', sub: 'Receive supplier stock', color: 'bg-primary/10 text-primary' },
+    { id: 'inventory-stock-out', icon: PackageMinus, label: 'Stock Out', sub: 'Damage, loss and correction', color: 'bg-error/10 text-error' },
+    { id: 'inventory-movements', icon: History, label: 'Movement History', sub: 'Complete stock audit trail', color: 'bg-secondary/10 text-secondary' },
+    { id: 'inventory-purchase-orders', icon: ClipboardList, label: 'Purchase Orders', sub: 'Order stock from suppliers', color: 'bg-tertiary/10 text-tertiary' },
+    { id: 'inventory-goods-received', icon: ClipboardCheck, label: 'Goods Received', sub: 'GRN against purchase orders', color: 'bg-primary/10 text-primary' },
+    { id: 'inventory-barcodes', icon: Barcode, label: 'Barcode / SKU', sub: 'Codes and label printing', color: 'bg-secondary/10 text-secondary' },
+    { id: 'inventory-batches', icon: CalendarClock, label: 'Batch & Expiry', sub: 'Expiry and batch stock', color: 'bg-tertiary/10 text-tertiary' },
+    { id: 'inventory-low-stock', icon: AlertTriangle, label: 'Low Stock Alerts', sub: 'Reorder required products', color: 'bg-error/10 text-error' },
+    { id: 'inventory-transfers', icon: Repeat, label: 'Transfers', sub: 'Move stock between stores', color: 'bg-primary/10 text-primary' },
+    { id: 'inventory-stock-count', icon: CheckCircle2, label: 'Stock Count', sub: 'Physical audit sessions', color: 'bg-secondary/10 text-secondary' },
+    { id: 'inventory-variants', icon: Layers, label: 'Variants', sub: 'Size, color and model SKUs', color: 'bg-tertiary/10 text-tertiary' },
+    { id: 'inventory-supplier-products', icon: Truck, label: 'Supplier Products', sub: 'Cost and lead-time mapping', color: 'bg-secondary/10 text-secondary' },
+    { id: 'inventory-valuation', icon: IndianRupee, label: 'Valuation', sub: 'Stock value and margin', color: 'bg-primary/10 text-primary' },
+    { id: 'inventory-dead-stock', icon: ArchiveX, label: 'Dead Stock', sub: 'Slow-moving inventory', color: 'bg-error/10 text-error' },
+    { id: 'inventory-returns', icon: RotateCcw, label: 'Returns', sub: 'Customer and supplier returns', color: 'bg-tertiary/10 text-tertiary' },
+    { id: 'inventory-reorder-rules', icon: SlidersHorizontal, label: 'Reorder Rules', sub: 'Min, max and auto alerts', color: 'bg-primary/10 text-primary' },
+    { id: 'inventory-import-export', icon: FileSpreadsheet, label: 'Import / Export', sub: 'Bulk upload and reports', color: 'bg-secondary/10 text-secondary' },
+];
+
 const navigateTo = (routeName: string) => {
     router.push({ name: routeName });
 };
@@ -58,61 +94,62 @@ const handleLogout = () => {
 <template>
     <div class="px-5 pt-2 space-y-6 pb-40 max-w-md mx-auto">
 
-        <!-- Profile Card -->
+        <!-- Account Header -->
         <section>
-            <SurfaceCard @click="navigateTo('profile')"
-                class="p-5 flex items-center gap-5 border border-surface-container-high/30 cursor-pointer group active:scale-[0.98] transition-all">
-                <div
-                    class="w-16 h-16 rounded-3xl bg-primary flex items-center justify-center text-white font-black text-xl shadow-xl shadow-primary/20 shrink-0 group-hover:scale-105 transition-transform">
-                    {{ shopStore.selectedShop.name.charAt(0) }}
-                </div>
-                <div class="grow min-w-0">
-                    <div class="flex items-center gap-2">
-                        <h3 class="font-black text-on-surface text-lg leading-tight truncate">
-                            {{ shopStore.selectedShop.name }}</h3>
-                        <div class="flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-lg shrink-0">
-                            <Crown class="w-3 h-3 text-primary" />
-                            <span class="text-[8px] font-black text-primary uppercase tracking-wider">Pro</span>
-                        </div>
-                    </div>
-                    <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider mt-1">
-                        {{ shopStore.selectedShop.branch }} • {{ shopStore.selectedShop.location }}
-                    </p>
-                </div>
-                <ChevronRight
-                    class="w-5 h-5 text-on-surface-variant/30 group-hover:text-primary transition-colors shrink-0" />
-            </SurfaceCard>
-        </section>
+            <SurfaceCard
+                class="p-0 rounded-4xl overflow-hidden border border-surface-container-high/30 bg-surface-container-low">
+                <div class="bg-primary-gradient p-5 text-white relative overflow-hidden">
+                    <div class="absolute -right-8 -top-10 w-32 h-32 rounded-full bg-white/10"></div>
+                    <div class="absolute right-10 bottom-0 w-20 h-20 rounded-full bg-white/10 translate-y-12"></div>
 
-        <!-- Dark Mode Toggle -->
-        <section>
-            <div @click="themeStore.toggleTheme()"
-                class="bg-surface-container-low p-4 rounded-4xl border border-surface-container-high/30 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-all group">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500"
-                        :class="themeStore.isDark ? 'bg-primary/20 text-primary' : 'bg-tertiary/10 text-tertiary'">
-                        <Moon v-if="themeStore.isDark" class="w-6 h-6" />
-                        <Sun v-else class="w-6 h-6" />
-                    </div>
-                    <div>
-                        <h3 class="font-black text-on-surface text-base">
-                            {{ themeStore.isDark ? 'Dark Mode' : 'Light Mode' }}
-                        </h3>
-                        <p class="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-wider mt-0.5">
-                            Tap to switch appearance
-                        </p>
+                    <div class="relative z-10 flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-4 min-w-0">
+                            <button @click="navigateTo('profile')"
+                                class="w-16 h-16 rounded-3xl bg-white/15 border border-white/15 flex items-center justify-center text-white font-black text-xl shadow-xl shadow-black/10 shrink-0 active:scale-95 transition-all">
+                                {{ shopStore.selectedShop.name.charAt(0) }}
+                            </button>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-black text-xl tracking-tight truncate">
+                                        {{ shopStore.selectedShop.name }}
+                                    </h3>
+                                    <div class="flex items-center gap-1 bg-white text-primary px-2 py-0.5 rounded-lg shrink-0">
+                                        <Crown class="w-3 h-3" />
+                                        <span class="text-[8px] font-black uppercase tracking-wider">Pro</span>
+                                    </div>
+                                </div>
+                                <p class="text-[10px] font-bold text-white/55 uppercase tracking-wider mt-1 truncate">
+                                    {{ shopStore.selectedShop.branch }} • {{ shopStore.selectedShop.location }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <button @click="themeStore.toggleTheme()"
+                            class="w-11 h-11 rounded-2xl bg-white/15 border border-white/10 flex items-center justify-center active:scale-95 transition-all shrink-0">
+                            <Moon v-if="themeStore.isDark" class="w-5 h-5" />
+                            <Sun v-else class="w-5 h-5" />
+                        </button>
                     </div>
                 </div>
-                <div :class="[
-                    'w-14 h-8 rounded-full relative transition-all duration-300 p-1',
-                    themeStore.isDark ? 'bg-primary' : 'bg-surface-container-highest'
-                ]">
-                    <div :class="[
-                        'w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300',
-                        themeStore.isDark ? 'translate-x-6' : 'translate-x-0'
-                    ]"></div>
+
+                <div class="grid grid-cols-3 divide-x divide-surface-container-high/40">
+                    <button @click="shopStore.toggleSwitcher"
+                        class="p-4 flex flex-col items-center gap-1.5 active:bg-surface-container-high/40 transition-all">
+                        <Store class="w-5 h-5 text-primary" />
+                        <span class="text-[8px] font-black text-on-surface-variant/45 uppercase tracking-wider">Switch</span>
+                    </button>
+                    <button @click="navigateTo('subscription')"
+                        class="p-4 flex flex-col items-center gap-1.5 active:bg-surface-container-high/40 transition-all">
+                        <CreditCard class="w-5 h-5 text-tertiary" />
+                        <span class="text-[8px] font-black text-on-surface-variant/45 uppercase tracking-wider">Billing</span>
+                    </button>
+                    <button @click="navigateTo('security')"
+                        class="p-4 flex flex-col items-center gap-1.5 active:bg-surface-container-high/40 transition-all">
+                        <Shield class="w-5 h-5 text-secondary" />
+                        <span class="text-[8px] font-black text-on-surface-variant/45 uppercase tracking-wider">Access</span>
+                    </button>
                 </div>
-            </div>
+            </SurfaceCard>
         </section>
 
         <!-- Menu Items -->
@@ -138,6 +175,33 @@ const handleLogout = () => {
                     </div>
                     <ChevronRight
                         class="w-4 h-4 text-on-surface-variant/20 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                </div>
+            </div>
+        </section>
+
+        <!-- Inventory Tools -->
+        <section class="space-y-2">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 px-1 mb-3">
+                Inventory Tools
+            </h3>
+
+            <div class="bg-surface-container-low rounded-4xl border border-surface-container-high/30 overflow-hidden">
+                <div v-for="(item, index) in inventoryItems" :key="item.id" @click="navigateTo(item.id)" :class="[
+                    'flex items-center justify-between p-4 px-5 cursor-pointer group transition-all active:scale-[0.98] hover:bg-surface-container-high/30',
+                    index !== inventoryItems.length - 1 && 'border-b border-surface-container-high/20'
+                ]">
+                    <div class="flex items-center gap-4 min-w-0">
+                        <div
+                            :class="['w-11 h-11 rounded-2xl flex items-center justify-center transition-all group-hover:scale-105 shrink-0', item.color]">
+                            <component :is="item.icon" class="w-5 h-5" />
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="font-black text-on-surface text-sm leading-tight truncate">{{ item.label }}</h3>
+                            <p class="text-[10px] font-bold text-on-surface-variant/40 mt-0.5 truncate">{{ item.sub }}</p>
+                        </div>
+                    </div>
+                    <ChevronRight
+                        class="w-4 h-4 text-on-surface-variant/20 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
                 </div>
             </div>
         </section>
