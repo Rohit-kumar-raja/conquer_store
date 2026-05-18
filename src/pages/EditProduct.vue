@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import {
-    ArrowLeft,
     Camera,
     Package,
     Hash,
@@ -56,19 +55,6 @@ const suppliers = [
 
 <template>
     <div class="px-6 pt-6 space-y-6 pb-32 max-w-md mx-auto">
-        <section class="flex items-center gap-4">
-            <button @click="router.back()"
-                class="p-2 -ml-2 hover:bg-surface-container-high rounded-full transition-colors">
-                <ArrowLeft class="w-6 h-6 text-primary" />
-            </button>
-            <div>
-                <h2 class="text-3xl font-black tracking-tighter text-on-surface leading-tight">Edit Product</h2>
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 mt-1">
-                    Catalog identity and stock rules
-                </p>
-            </div>
-        </section>
-
         <section>
             <SurfaceCard variant="low" class="p-5 flex items-center gap-4 border border-surface-container-high/30">
                 <div class="w-24 h-24 rounded-3xl bg-white overflow-hidden border border-surface-container-high shrink-0">

@@ -7,7 +7,22 @@ import {
     ArrowLeft,
     Share2,
     ChevronDown,
-    MoreVertical
+    BarChart3,
+    BellRing,
+    Bookmark,
+    Boxes,
+    CreditCard,
+    FileText,
+    FolderOpen,
+    Package,
+    ScanLine,
+    Settings,
+    Shield,
+    ShoppingBag,
+    Store,
+    Tags,
+    Truck,
+    Users
 } from 'lucide-vue-next';
 import { useShopStore } from '../stores/useShopStore';
 
@@ -28,13 +43,73 @@ const pageTitles: Record<string, string> = {
     'menu': 'System',
     'notifications': 'Pulses',
     'bill-history': 'Bill History',
-    'add-product': 'Inventory',
     'scanner': 'Optic Scan',
     'master-categories': 'Categories',
     'master-brands': 'Brands',
     'master-suppliers': 'Suppliers',
     'master-customers': 'Customers',
+    'product-detail': 'Product Detail',
+    'edit-product': 'Edit Product',
+    'add-product': 'Add Product',
+    'inventory-stock-in': 'Stock In',
+    'inventory-stock-out': 'Stock Out',
+    'inventory-movements': 'Movement History',
+    'inventory-purchase-orders': 'Purchase Orders',
+    'inventory-goods-received': 'Goods Received',
+    'inventory-barcodes': 'Barcode / SKU',
+    'inventory-batches': 'Batch & Expiry',
+    'inventory-low-stock': 'Low Stock Alerts',
+    'inventory-transfers': 'Transfers',
+    'inventory-stock-count': 'Stock Count',
+    'inventory-variants': 'Variants',
+    'inventory-supplier-products': 'Supplier Products',
+    'inventory-valuation': 'Valuation',
+    'inventory-dead-stock': 'Dead Stock',
+    'inventory-returns': 'Returns',
+    'inventory-reorder-rules': 'Reorder Rules',
+    'inventory-import-export': 'Import / Export',
 };
+
+const pageIcons: Record<string, unknown> = {
+    dashboard: Store,
+    bill: ShoppingBag,
+    inventory: Boxes,
+    reports: BarChart3,
+    menu: FolderOpen,
+    profile: Users,
+    subscription: CreditCard,
+    settings: Settings,
+    security: Shield,
+    'notifications-settings': BellRing,
+    support: FileText,
+    'bill-history': FileText,
+    'add-product': Package,
+    'edit-product': Package,
+    scanner: ScanLine,
+    'master-categories': Tags,
+    'master-brands': Bookmark,
+    'master-suppliers': Truck,
+    'master-customers': Users,
+    'inventory-stock-in': Package,
+    'inventory-stock-out': Package,
+    'inventory-movements': FileText,
+    'inventory-purchase-orders': FileText,
+    'inventory-goods-received': FileText,
+    'inventory-barcodes': ScanLine,
+    'inventory-batches': Calendar,
+    'inventory-low-stock': BarChart3,
+    'inventory-transfers': Truck,
+    'inventory-stock-count': Check,
+    'inventory-variants': Tags,
+    'inventory-supplier-products': Truck,
+    'inventory-valuation': CreditCard,
+    'inventory-dead-stock': Package,
+    'inventory-returns': RotateCcw,
+    'inventory-reorder-rules': Settings,
+    'inventory-import-export': FileText,
+};
+
+const currentIcon = computed(() => pageIcons[currentScreen.value] || Store);
 
 const isMainScreen = computed(() =>
     ['dashboard', 'bill', 'inventory', 'reports', 'menu'].includes(currentScreen.value)
@@ -64,6 +139,10 @@ const isMainScreen = computed(() =>
             <!-- Contextual Branding -->
             <div @click="shopStore.toggleSwitcher" class="flex flex-col cursor-pointer group">
                 <div class="flex items-center gap-1.5">
+                    <div v-if="!isMainScreen"
+                        class="w-9 h-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <component :is="currentIcon" class="w-4.5 h-4.5" />
+                    </div>
                     <h1
                         class="text-base font-black text-on-surface leading-tight tracking-tight group-hover:text-primary transition-all">
                         {{ isMainScreen ? shopStore.selectedShop.name : (pageTitles[currentScreen] || 'Layer') }}

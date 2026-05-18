@@ -2,7 +2,6 @@
 import { useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
 import {
-    ArrowLeft,
     Camera,
     ScanLine,
     Package,
@@ -133,14 +132,6 @@ onMounted(async () => {
 
 <template>
     <div class="px-6 pt-6 space-y-8 pb-32 max-w-md mx-auto">
-        <section class="flex items-center gap-4">
-            <button @click="router.push({ name: 'inventory' })"
-                class="p-2 -ml-2 hover:bg-surface-container-high rounded-full transition-colors">
-                <ArrowLeft class="w-6 h-6 text-primary" />
-            </button>
-            <h2 class="text-3xl font-black tracking-tighter text-on-surface leading-tight">Add Product</h2>
-        </section>
-
         <!-- Image Upload -->
         <section>
             <div

@@ -3,7 +3,6 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
     AlertTriangle,
-    ArrowLeft,
     ArchiveX,
     Barcode,
     Boxes,
@@ -655,26 +654,6 @@ onMounted(async () => {
 
 <template>
     <div class="px-5 pt-4 space-y-6 pb-40 max-w-md mx-auto">
-        <section class="flex items-center gap-4">
-            <button @click="router.back()"
-                class="p-2 -ml-2 hover:bg-surface-container-high rounded-full transition-colors">
-                <ArrowLeft class="w-6 h-6 text-primary" />
-            </button>
-            <div class="grow min-w-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                        <component :is="icon" class="w-5 h-5" />
-                    </div>
-                    <div class="min-w-0">
-                        <h2 class="text-2xl font-black text-on-surface tracking-tight truncate">{{ activeConfig.title }}</h2>
-                        <p class="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-wider truncate">
-                            {{ activeConfig.subtitle }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <section class="grid grid-cols-3 gap-3">
             <SurfaceCard v-for="stat in displayedStats" :key="stat.label" variant="low"
                 class="p-4 rounded-3xl border border-surface-container-high/30">
