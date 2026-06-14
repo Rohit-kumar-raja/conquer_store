@@ -5,6 +5,7 @@ import SettingsTaxCompliance from '../components/settings/SettingsTaxCompliance.
 import SettingsAppearance from '../components/settings/SettingsAppearance.vue';
 import SettingsMasterData from '../components/settings/SettingsMasterData.vue';
 import SettingsDangerZone from '../components/settings/SettingsDangerZone.vue';
+import SettingsPurchaseWorkflow from '../components/settings/SettingsPurchaseWorkflow.vue';
 import { SurfaceCard } from '../components';
 
 const statusCards = [
@@ -57,6 +58,7 @@ const statusCards = [
             <SettingsLocalization />
             <SettingsTaxCompliance />
             <SettingsAppearance />
+            <SettingsPurchaseWorkflow />
             <section class="grid grid-cols-1 gap-3">
                 <SurfaceCard variant="low"
                     class="p-5 rounded-4xl border border-surface-container-high/30 flex items-center justify-between">

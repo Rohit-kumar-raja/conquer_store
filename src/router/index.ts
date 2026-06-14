@@ -91,7 +91,7 @@ const routes: RouteRecordRaw[] = [
             },
             {
                 path: 'inventory/purchase-orders',
-                component: () => import('../pages/inventory/InventoryWorkflow.vue'),
+                component: () => import('../pages/purchase/PurchaseOrders.vue'),
                 name: 'inventory-purchase-orders'
             },
             {
