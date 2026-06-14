@@ -1,82 +1,127 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { onMounted, ref } from 'vue';
 import {
-    Camera,
-    ScanLine,
-    Package,
+    Barcode,
+    Boxes,
+    DollarSign,
+    FileText,
     Hash,
     Layers,
-    DollarSign,
-    Save,
+    Package,
     Plus,
-    Minus,
+    Save,
+    ScanLine,
     Tag,
     Truck,
-    FileText,
-    X
+    Warehouse,
+    X,
 } from 'lucide-vue-next';
-import { SurfaceCard, Button, Input, Select } from '../components';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
+import { Button, Input, Select } from '../components';
 import { productScanService, type ProductScanDraft } from '../services/productScanService';
-import { productService } from '../services/productService';
+import {
+    productService,
+    type ProductOption,
+    type ProductOptions,
+} from '../services/productService';
 
 const router = useRouter();
+const emptyOptions = (): ProductOptions => ({
+    categories: [],
+    subcategories: [],
+    brands: [],
+    suppliers: [],
+    units: [],
+    warehouses: [],
+    tracking_types: [],
+    valuation_methods: [],
+});
+
+const options = ref<ProductOptions>(emptyOptions());
+const loadingOptions = ref(true);
+const saving = ref(false);
+const error = ref('');
 
 const productName = ref('');
 const sku = ref('');
 const description = ref('');
+const barcode = ref('');
+const hsnCode = ref('');
+const selectedCategory = ref<string>();
+const selectedSubcategory = ref<string>();
+const selectedBrand = ref<string>();
+const selectedSupplier = ref<string>();
+const trackingType = ref('none');
+const baseUomId = ref<string>();
+const purchaseUomId = ref<string>();
+const purchaseConversionRatio = ref(1);
+const warehouseId = ref<string>();
+const valuationMethod = ref('FIFO');
+const costPrice = ref<number | null>(null);
+const mrp = ref<number | null>(null);
 const sellingPrice = ref<number | null>(null);
+const gstRate = ref<number | null>(null);
 const stock = ref(0);
-const selectedCategory = ref();
-const selectedBrand = ref();
-const selectedSupplier = ref();
-const scannedImage = ref<string | undefined>();
-
-const categories = ref([
-    { name: 'Footwear', id: 1 },
-    { name: 'Electronics', id: 2 },
-    { name: 'Audio', id: 3 },
-    { name: 'Imaging', id: 4 }
-]);
-
-const brands = ref([
-    { name: 'Quantum', id: 1 },
-    { name: 'Aura', id: 2 },
-    { name: 'Sonic', id: 3 },
-    { name: 'Vortex', id: 4 }
-]);
-
-const suppliers = ref([
-    { name: 'Lumina Tech Logistics', id: 1 },
-    { name: 'Reliance Distribution', id: 2 },
-    { name: 'Metro Cash & Carry', id: 3 },
-    { name: 'Bajaj Wholesale', id: 4 }
-]);
+const reorderPoint = ref<number | null>(null);
+const reorderQty = ref<number | null>(null);
+const leadTimeDays = ref<number | null>(null);
+const isPurchasable = ref(true);
+const isSellable = ref(true);
+const trackInventory = ref(true);
+const allowNegativeStock = ref(false);
 
 const showCategoryDialog = ref(false);
 const showBrandDialog = ref(false);
 const newCategoryName = ref('');
 const newBrandName = ref('');
 
-const addNewCategory = () => {
-    if (newCategoryName.value) {
-        const newCat = { name: newCategoryName.value, id: Date.now() };
-        categories.value.push(newCat);
-        selectedCategory.value = newCat.id;
-        newCategoryName.value = '';
-        showCategoryDialog.value = false;
+const subcategories = computed(() =>
+    options.value.subcategories.filter(
+        (item) => !selectedCategory.value || item.category_id === selectedCategory.value
+    )
+);
+
+const loadOptions = async () => {
+    loadingOptions.value = true;
+    error.value = '';
+    try {
+        options.value = await productService.getProductOptions();
+        trackingType.value = options.value.tracking_types[0]?.id || 'none';
+        valuationMethod.value = options.value.valuation_methods[0]?.id || 'FIFO';
+    } catch (e) {
+        error.value = e instanceof Error ? e.message : 'Could not load product options.';
+    } finally {
+        loadingOptions.value = false;
     }
 };
 
-const addNewBrand = () => {
-    if (newBrandName.value) {
-        const newBr = { name: newBrandName.value, id: Date.now() };
-        brands.value.push(newBr);
-        selectedBrand.value = newBr.id;
+const addNewCategory = async () => {
+    const name = newCategoryName.value.trim();
+    if (!name) return;
+    try {
+        const category = await productService.createCategory(name);
+        options.value.categories.push(category);
+        selectedCategory.value = category.id;
+        newCategoryName.value = '';
+        showCategoryDialog.value = false;
+    } catch (e) {
+        error.value = e instanceof Error ? e.message : 'Could not create category.';
+    }
+};
+
+const addNewBrand = async () => {
+    const name = newBrandName.value.trim();
+    if (!name) return;
+    try {
+        const brand = await productService.createBrand(name);
+        options.value.brands.push(brand);
+        selectedBrand.value = brand.id;
         newBrandName.value = '';
         showBrandDialog.value = false;
+    } catch (e) {
+        error.value = e instanceof Error ? e.message : 'Could not create brand.';
     }
 };
 
@@ -85,245 +130,192 @@ const applyScannedDraft = (draft: ProductScanDraft) => {
     sku.value = draft.sku;
     sellingPrice.value = draft.sellingPrice;
     stock.value = draft.stock;
-    scannedImage.value = draft.image;
-
-    const category = categories.value.find((item) => item.name === draft.categoryName);
-    const brand = brands.value.find((item) => item.name === draft.brandName);
-    selectedCategory.value = category?.id;
-    selectedBrand.value = brand?.id;
-};
-
-const scanProduct = () => {
-    router.push({ name: 'scanner', query: { mode: 'add-product' } });
+    selectedCategory.value = options.value.categories.find(
+        (item) => item.name === draft.categoryName
+    )?.id;
+    selectedBrand.value = options.value.brands.find(
+        (item) => item.name === draft.brandName
+    )?.id;
 };
 
 const saveProduct = async () => {
-    const category = categories.value.find((item) => item.id === selectedCategory.value);
-    const brand = brands.value.find((item) => item.id === selectedBrand.value);
-    const supplier = suppliers.value.find((item) => item.id === selectedSupplier.value);
+    if (!productName.value.trim() || !sku.value.trim()) {
+        error.value = 'Product name and SKU are required.';
+        return;
+    }
 
-    if (!productName.value.trim() || !sku.value.trim()) return;
-
-    await productService.createProduct({
-        name: productName.value.trim(),
-        sku: sku.value.trim(),
-        image: scannedImage.value,
-        stock: stock.value,
-        category: category?.name || 'Uncategorized',
-        brand: brand?.name || 'Generic',
-        supplier: supplier?.name || 'Unassigned',
-        description: description.value,
-        sellingPrice: Number(sellingPrice.value || 0)
-    });
-
-    await productScanService.clearDraft();
-    router.push({ name: 'inventory' });
+    saving.value = true;
+    error.value = '';
+    try {
+        await productService.createProduct({
+            name: productName.value.trim(),
+            sku: sku.value.trim(),
+            description: description.value.trim(),
+            categoryId: selectedCategory.value,
+            subcategoryId: selectedSubcategory.value,
+            brandId: selectedBrand.value,
+            supplierId: selectedSupplier.value,
+            hsnCode: hsnCode.value.trim(),
+            barcode: barcode.value.trim(),
+            trackingType: trackingType.value,
+            baseUomId: baseUomId.value,
+            purchaseUomId: purchaseUomId.value,
+            purchaseConversionRatio: Number(purchaseConversionRatio.value || 1),
+            costPrice: costPrice.value ?? undefined,
+            mrp: mrp.value ?? undefined,
+            sellingPrice: Number(sellingPrice.value || 0),
+            gstRate: gstRate.value ?? undefined,
+            leadTimeDays: leadTimeDays.value ?? undefined,
+            reorderPoint: reorderPoint.value ?? undefined,
+            reorderQty: reorderQty.value ?? undefined,
+            warehouseId: warehouseId.value,
+            valuationMethod: valuationMethod.value,
+            stock: Number(stock.value || 0),
+            isPurchasable: isPurchasable.value,
+            isSellable: isSellable.value,
+            trackInventory: trackInventory.value,
+            allowNegativeStock: allowNegativeStock.value,
+        });
+        await productScanService.clearDraft();
+        router.push({ name: 'inventory' });
+    } catch (e) {
+        error.value = e instanceof Error ? e.message : 'Could not create product.';
+    } finally {
+        saving.value = false;
+    }
 };
 
 onMounted(async () => {
-    selectedSupplier.value = selectedSupplier.value ?? suppliers.value[0]?.id;
-
+    await loadOptions();
     const draft = await productScanService.getDraft();
-    if (draft) {
-        applyScannedDraft(draft);
-    }
+    if (draft) applyScannedDraft(draft);
 });
 </script>
 
 <template>
     <div class="px-6 pt-6 space-y-8 pb-32 max-w-md mx-auto">
-        <!-- Image Upload -->
-        <section>
-            <div
-                class="relative w-full aspect-square bg-surface-container-low rounded-[3rem] border-2 border-dashed border-surface-container-highest flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-surface-container-high transition-all group active:scale-[0.98] overflow-hidden">
-                <img v-if="scannedImage" :src="scannedImage" alt="Scanned product"
-                    class="absolute w-[calc(100%-3rem)] aspect-square rounded-[2.25rem] object-cover opacity-25" />
-                <div
-                    class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                    <Camera class="w-10 h-10" />
-                </div>
-                <div class="text-center">
-                    <p class="font-bold text-on-surface">Upload Product Image</p>
-                    <p class="text-[10px] text-on-surface-variant font-black uppercase tracking-widest">PNG, JPG up to
-                        10MB</p>
-                </div>
-                <button @click.stop="scanProduct"
-                    class="relative z-10 mt-2 px-5 py-3 rounded-2xl bg-primary text-white flex items-center gap-2 text-xs font-black uppercase tracking-widest active:scale-95 transition-all">
-                    <ScanLine class="w-4 h-4" />
-                    Scan Product
-                </button>
-            </div>
-        </section>
+        <button @click="router.push({ name: 'scanner', query: { mode: 'add-product' } })"
+            class="w-full p-5 rounded-3xl border-2 border-dashed border-primary/20 bg-primary/5 text-primary flex items-center justify-center gap-3 font-black text-xs uppercase tracking-wider">
+            <ScanLine class="w-5 h-5" />
+            Scan Product
+        </button>
 
-        <!-- Form Fields -->
-        <section class="space-y-6">
-            <div class="space-y-4">
-                <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] ml-1">Basic
-                    Intelligence</p>
+        <p v-if="loadingOptions" class="text-sm font-bold text-on-surface-variant">Loading backend options...</p>
+        <p v-if="error" class="rounded-2xl bg-error/10 px-4 py-3 text-sm font-bold text-error">{{ error }}</p>
 
-                <Input v-model="productName" label="Product Name" placeholder="e.g. Quantum Pulse X1">
-                    <template #icon>
-                        <Package class="w-5 h-5" />
-                    </template>
-                </Input>
-
-                <div class="relative group">
-                    <label
-                        class="absolute left-4 -top-2.5 px-2 bg-surface-container-lowest text-[10px] font-bold uppercase tracking-widest text-primary z-10">
-                        Description
-                    </label>
-                    <div
-                        class="flex items-start bg-surface-container-high rounded-2xl px-5 py-4 min-h-28 transition-all focus-within:ring-2 focus-within:ring-primary/20 border border-transparent focus-within:border-primary/10">
-                        <FileText class="w-5 h-5 text-on-surface-variant mr-4 mt-1 shrink-0" />
-                        <textarea v-model="description" rows="3" placeholder="Add product details, size, color, material or notes..."
-                            class="bg-transparent border-none focus:ring-0 w-full resize-none text-on-surface placeholder:text-on-surface-variant/40 font-bold text-sm outline-none"></textarea>
-                    </div>
-                </div>
-
-                <Input v-model="sku" label="SKU Number" placeholder="e.g. QPX-2024-RED">
-                    <template #icon>
-                        <Hash class="w-5 h-5" />
-                    </template>
-                </Input>
-
-                <!-- Category with Add Button -->
-                <Select v-model="selectedCategory" label="Category" placeholder="Select Category" :options="categories"
-                    optionLabel="name" optionValue="id">
-                    <template #icon>
-                        <Layers class="w-5 h-5" />
-                    </template>
-                    <template #right>
-                        <button @click.stop="showCategoryDialog = true"
-                            class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center active:scale-90 transition-all">
-                            <Plus class="w-5 h-5" />
-                        </button>
-                    </template>
-                </Select>
-
-                <!-- Brand with Add Button -->
-                <Select v-model="selectedBrand" label="Brand" placeholder="Select Brand" :options="brands"
-                    optionLabel="name" optionValue="id">
-                    <template #icon>
-                        <Tag class="w-5 h-5" />
-                    </template>
-                    <template #right>
-                        <button @click.stop="showBrandDialog = true"
-                            class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center active:scale-90 transition-all">
-                            <Plus class="w-5 h-5" />
-                        </button>
-                    </template>
-                </Select>
-
-                <Select v-model="selectedSupplier" label="Supplier" placeholder="Select Supplier" :options="suppliers"
-                    optionLabel="name" optionValue="id">
-                    <template #icon>
-                        <Truck class="w-5 h-5" />
-                    </template>
-                </Select>
-            </div>
-
-            <div class="space-y-4">
-                <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] ml-1">Pricing &
-                    Payload</p>
-
-                <Input v-model="sellingPrice" label="Selling Price" placeholder="0.00" type="number">
-                    <template #icon>
-                        <DollarSign class="w-5 h-5" />
-                    </template>
-                </Input>
-
-                <div
-                    class="bg-surface-container-low p-6 rounded-[2.5rem] space-y-4 border border-surface-container-highest">
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm font-black text-on-surface tracking-tight">Initial Stock Level</span>
-                        <div class="flex items-center gap-4 bg-surface-container-high p-1 rounded-2xl">
-                            <button @click="stock = Math.max(0, stock - 1)"
-                                class="w-10 h-10 rounded-xl bg-surface-container-lowest flex items-center justify-center text-primary/40 hover:text-primary transition-all active:scale-95">
-                                <Minus class="w-5 h-5" />
-                            </button>
-                            <span class="w-12 text-center font-black text-lg">{{ stock }}</span>
-                            <button @click="stock++"
-                                class="w-10 h-10 rounded-xl bg-surface-container-lowest flex items-center justify-center text-primary hover:text-primary transition-all active:scale-95">
-                                <Plus class="w-5 h-5" />
-                            </button>
-                        </div>
-                    </div>
+        <section class="space-y-5">
+            <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] ml-1">Identification</p>
+            <Input v-model="productName" label="Product Name" placeholder="Product name">
+                <template #icon><Package class="w-5 h-5" /></template>
+            </Input>
+            <Input v-model="sku" label="SKU" placeholder="Unique store SKU">
+                <template #icon><Hash class="w-5 h-5" /></template>
+            </Input>
+            <Input v-model="barcode" label="Barcode" placeholder="Optional barcode">
+                <template #icon><Barcode class="w-5 h-5" /></template>
+            </Input>
+            <Input v-model="hsnCode" label="HSN Code" placeholder="Optional HSN code">
+                <template #icon><Hash class="w-5 h-5" /></template>
+            </Input>
+            <div class="relative group">
+                <label class="absolute left-4 -top-2.5 px-2 bg-surface-container-lowest text-[10px] font-bold uppercase tracking-widest text-primary z-10">Description</label>
+                <div class="flex items-start bg-surface-container-high rounded-2xl px-5 py-4 min-h-28">
+                    <FileText class="w-5 h-5 text-on-surface-variant mr-4 mt-1 shrink-0" />
+                    <textarea v-model="description" rows="3" placeholder="Product description"
+                        class="bg-transparent border-none w-full resize-none text-on-surface font-bold text-sm outline-none"></textarea>
                 </div>
             </div>
         </section>
 
-        <!-- Action Buttons -->
-        <div
-            class="fixed bottom-0 left-0 right-0 w-full bg-surface/80 backdrop-blur-2xl border-t border-surface-container-high px-6 pb-10 pt-4 z-[60] flex gap-4 max-w-md mx-auto">
-            <Button variant="secondary" class="flex-1 rounded-2xl font-black"
-                @click="router.push({ name: 'inventory' })">
-                Discard
-            </Button>
-            <Button class="flex-1 rounded-2xl font-black" @click="saveProduct">
-                <template #icon>
-                    <Save class="w-5 h-5" />
+        <section class="space-y-5">
+            <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] ml-1">Classification</p>
+            <Select v-model="selectedCategory" label="Category" :options="options.categories" optionLabel="name" optionValue="id" placeholder="Select category">
+                <template #icon><Layers class="w-5 h-5" /></template>
+                <template #right>
+                    <button @click.stop="showCategoryDialog = true" class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <Plus class="w-5 h-5" />
+                    </button>
                 </template>
-                Deploy
+            </Select>
+            <Select v-model="selectedSubcategory" label="Subcategory" :options="subcategories" optionLabel="name" optionValue="id" placeholder="Select subcategory">
+                <template #icon><Boxes class="w-5 h-5" /></template>
+            </Select>
+            <Select v-model="selectedBrand" label="Brand" :options="options.brands" optionLabel="name" optionValue="id" placeholder="Select brand">
+                <template #icon><Tag class="w-5 h-5" /></template>
+                <template #right>
+                    <button @click.stop="showBrandDialog = true" class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <Plus class="w-5 h-5" />
+                    </button>
+                </template>
+            </Select>
+            <Select v-model="selectedSupplier" label="Preferred Supplier" :options="options.suppliers" optionLabel="name" optionValue="id" placeholder="Select supplier">
+                <template #icon><Truck class="w-5 h-5" /></template>
+            </Select>
+        </section>
+
+        <section class="space-y-5">
+            <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] ml-1">Tracking & Units</p>
+            <Select v-model="trackingType" label="Tracking Type" :options="options.tracking_types" optionLabel="name" optionValue="id" />
+            <Select v-model="baseUomId" label="Base Unit" :options="options.units" optionLabel="name" optionValue="id" placeholder="Select base unit" />
+            <Select v-model="purchaseUomId" label="Purchase Unit" :options="options.units" optionLabel="name" optionValue="id" placeholder="Select purchase unit" />
+            <Input v-model="purchaseConversionRatio" label="Purchase Conversion Ratio" type="number" />
+            <Select v-model="warehouseId" label="Default Warehouse" :options="options.warehouses" optionLabel="name" optionValue="id" placeholder="Select warehouse">
+                <template #icon><Warehouse class="w-5 h-5" /></template>
+            </Select>
+            <Select v-model="valuationMethod" label="Valuation Method" :options="options.valuation_methods" optionLabel="name" optionValue="id" />
+        </section>
+
+        <section class="space-y-5">
+            <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] ml-1">Pricing & Stock</p>
+            <div class="grid grid-cols-2 gap-3">
+                <Input v-model="costPrice" label="Cost Price" type="number"><template #icon><DollarSign class="w-5 h-5" /></template></Input>
+                <Input v-model="sellingPrice" label="Selling Price" type="number"><template #icon><DollarSign class="w-5 h-5" /></template></Input>
+                <Input v-model="mrp" label="MRP" type="number" />
+                <Input v-model="gstRate" label="GST Rate %" type="number" />
+                <Input v-model="stock" label="Opening Stock" type="number" />
+                <Input v-model="reorderPoint" label="Reorder Point" type="number" />
+                <Input v-model="reorderQty" label="Reorder Quantity" type="number" />
+                <Input v-model="leadTimeDays" label="Lead Time Days" type="number" />
+            </div>
+        </section>
+
+        <section class="bg-surface-container-low rounded-3xl p-5 space-y-4">
+            <label class="flex items-center justify-between text-sm font-black text-on-surface">
+                Purchasable
+                <input v-model="isPurchasable" type="checkbox" class="w-5 h-5 accent-primary" />
+            </label>
+            <label class="flex items-center justify-between text-sm font-black text-on-surface">
+                Sellable
+                <input v-model="isSellable" type="checkbox" class="w-5 h-5 accent-primary" />
+            </label>
+            <label class="flex items-center justify-between text-sm font-black text-on-surface">
+                Track inventory
+                <input v-model="trackInventory" type="checkbox" class="w-5 h-5 accent-primary" />
+            </label>
+            <label class="flex items-center justify-between text-sm font-black text-on-surface">
+                Allow negative stock
+                <input v-model="allowNegativeStock" type="checkbox" class="w-5 h-5 accent-primary" />
+            </label>
+        </section>
+
+        <div class="fixed bottom-0 left-0 right-0 w-full bg-surface/80 backdrop-blur-2xl border-t border-surface-container-high px-6 pb-10 pt-4 z-[60] flex gap-4 max-w-md mx-auto">
+            <Button variant="secondary" class="flex-1 rounded-2xl font-black" @click="router.push({ name: 'inventory' })">Discard</Button>
+            <Button class="flex-1 rounded-2xl font-black" :disabled="saving || loadingOptions" @click="saveProduct">
+                <template #icon><Save class="w-5 h-5" /></template>
+                {{ saving ? 'Saving' : 'Save Product' }}
             </Button>
         </div>
 
-        <!-- Add Category Dialog -->
-        <Dialog v-model:visible="showCategoryDialog" modal header="New Category" :pt="{
-            root: { class: 'bg-surface-container-high rounded-[2.5rem] border-none shadow-2xl w-[90vw] max-w-sm' },
-            header: { class: 'p-6 flex justify-between items-center border-b border-surface-container-highest' },
-            title: { class: 'text-xl font-black text-on-surface tracking-tighter' },
-            content: { class: 'p-6 space-y-6' },
-            pcCloseButton: { root: { class: 'hidden' } }
-        }">
-            <template #header>
-                <h3 class="text-xl font-black text-on-surface tracking-tighter">New Intelligence Category</h3>
-                <button @click="showCategoryDialog = false"
-                    class="p-2 rounded-xl hover:bg-surface-container-highest transition-colors">
-                    <X class="w-5 h-5 text-on-surface-variant" />
-                </button>
-            </template>
-            <div class="space-y-6">
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Category
-                        Label</label>
-                    <InputText v-model="newCategoryName" placeholder="Enter name..."
-                        class="w-full bg-surface-container-highest border-none rounded-2xl p-4 text-on-surface font-bold focus:ring-2 focus:ring-primary/20 shadow-none" />
-                </div>
-                <div class="flex gap-3">
-                    <Button variant="secondary" class="flex-1 rounded-xl"
-                        @click="showCategoryDialog = false">Cancel</Button>
-                    <Button class="flex-1 rounded-xl" @click="addNewCategory">Initialize</Button>
-                </div>
+        <Dialog v-model:visible="showCategoryDialog" modal header="New Category" class="w-[90vw] max-w-sm">
+            <div class="space-y-4">
+                <InputText v-model="newCategoryName" placeholder="Category name" class="w-full" />
+                <Button class="w-full" @click="addNewCategory">Create in Backend</Button>
             </div>
         </Dialog>
-
-        <!-- Add Brand Dialog -->
-        <Dialog v-model:visible="showBrandDialog" modal header="New Brand" :pt="{
-            root: { class: 'bg-surface-container-high rounded-[2.5rem] border-none shadow-2xl w-[90vw] max-w-sm' },
-            header: { class: 'p-6 flex justify-between items-center border-b border-surface-container-highest' },
-            title: { class: 'text-xl font-black text-on-surface tracking-tighter' },
-            content: { class: 'p-6 space-y-6' },
-            pcCloseButton: { root: { class: 'hidden' } }
-        }">
-            <template #header>
-                <h3 class="text-xl font-black text-on-surface tracking-tighter">New Brand Node</h3>
-                <button @click="showBrandDialog = false"
-                    class="p-2 rounded-xl hover:bg-surface-container-highest transition-colors">
-                    <X class="w-5 h-5 text-on-surface-variant" />
-                </button>
-            </template>
-            <div class="space-y-6">
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Brand
-                        Identifier</label>
-                    <InputText v-model="newBrandName" placeholder="Enter name..."
-                        class="w-full bg-surface-container-highest border-none rounded-2xl p-4 text-on-surface font-bold focus:ring-2 focus:ring-primary/20 shadow-none" />
-                </div>
-                <div class="flex gap-3">
-                    <Button variant="secondary" class="flex-1 rounded-xl"
-                        @click="showBrandDialog = false">Cancel</Button>
-                    <Button class="flex-1 rounded-xl" @click="addNewBrand">Establish</Button>
-                </div>
+        <Dialog v-model:visible="showBrandDialog" modal header="New Brand" class="w-[90vw] max-w-sm">
+            <div class="space-y-4">
+                <InputText v-model="newBrandName" placeholder="Brand name" class="w-full" />
+                <Button class="w-full" @click="addNewBrand">Create in Backend</Button>
             </div>
         </Dialog>
     </div>

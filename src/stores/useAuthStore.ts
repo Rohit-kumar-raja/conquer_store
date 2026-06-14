@@ -6,6 +6,7 @@ import {
     firebaseSignOut,
     updateCurrentUserProfile,
 } from '../services/firebaseAuth';
+import { exchangeFirebaseToken, type BackendStore } from '../services/authApi';
 
 export interface User {
     id: string;
@@ -35,9 +36,28 @@ export const useAuthStore = defineStore('auth', () => {
         try { user.value = JSON.parse(storedUser); } catch { /* ignore */ }
     }
 
+    const persistBackendSession = (
+        accessToken: string,
+        backendUser: User,
+        stores: BackendStore[]
+    ) => {
+        token.value = accessToken;
+        user.value = backendUser;
+        localStorage.setItem('cnq_token', accessToken);
+        localStorage.setItem('cnq_user', JSON.stringify(backendUser));
+        localStorage.setItem('cnq_stores', JSON.stringify(stores));
+
+        const currentStoreId = localStorage.getItem('cnq_active_store_id');
+        if (!currentStoreId || !stores.some((store) => store.id === currentStoreId)) {
+            const defaultStore = stores.find((store) => store.is_default) || stores[0];
+            if (defaultStore) localStorage.setItem('cnq_active_store_id', defaultStore.id);
+        }
+    };
+
     const completeSignIn = async (firebaseUser: Awaited<ReturnType<typeof firebaseVerifyOtp>>, phone: string): Promise<boolean> => {
         const idToken = await firebaseUser.getIdToken();
-        const isNewUser = !firebaseUser.displayName;
+        const backendSession = await exchangeFirebaseToken(idToken);
+        const isNewUser = backendSession.is_new_user || backendSession.stores.length === 0;
 
         if (isNewUser) {
             pendingRegistration.value = {
@@ -51,15 +71,16 @@ export const useAuthStore = defineStore('auth', () => {
             localStorage.removeItem('cnq_user');
         } else {
             pendingRegistration.value = null;
-            token.value = idToken;
-            localStorage.setItem('cnq_token', idToken);
-            user.value = {
-                id: firebaseUser.uid,
-                name: firebaseUser.displayName || '',
-                phone,
-                uid: firebaseUser.uid,
-            };
-            localStorage.setItem('cnq_user', JSON.stringify(user.value));
+            persistBackendSession(
+                backendSession.access_token,
+                {
+                    id: backendSession.user.id,
+                    name: backendSession.user.name || firebaseUser.displayName || '',
+                    phone: backendSession.user.phone || phone,
+                    uid: firebaseUser.uid,
+                },
+                backendSession.stores
+            );
         }
 
         return isNewUser;
@@ -108,7 +129,7 @@ export const useAuthStore = defineStore('auth', () => {
     /**
      * Complete registration for new user
      */
-    const register = async (name: string, phone: string) => {
+    const register = async (name: string, phone: string, businessName?: string) => {
         const pending = pendingRegistration.value;
         if (!pending || pending.phone !== phone) {
             throw new Error('No verified phone session found. Please verify OTP again.');
@@ -116,15 +137,20 @@ export const useAuthStore = defineStore('auth', () => {
 
         await updateCurrentUserProfile(name);
 
-        user.value = {
-            id: pending.uid,
+        const backendSession = await exchangeFirebaseToken(pending.token, {
             name,
-            phone,
-            uid: pending.uid,
-        };
-        token.value = pending.token;
-        localStorage.setItem('cnq_token', pending.token);
-        localStorage.setItem('cnq_user', JSON.stringify(user.value));
+            businessName: businessName?.trim() || `${name}'s Store`,
+        });
+        persistBackendSession(
+            backendSession.access_token,
+            {
+                id: backendSession.user.id,
+                name: backendSession.user.name || name,
+                phone: backendSession.user.phone || phone,
+                uid: pending.uid,
+            },
+            backendSession.stores
+        );
         pendingRegistration.value = null;
     };
 
@@ -134,6 +160,8 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = null;
         localStorage.removeItem('cnq_token');
         localStorage.removeItem('cnq_user');
+        localStorage.removeItem('cnq_stores');
+        localStorage.removeItem('cnq_active_store_id');
 
         try {
             await firebaseSignOut();
@@ -154,6 +182,8 @@ export const useAuthStore = defineStore('auth', () => {
         pendingRegistration.value = null;
         localStorage.removeItem('cnq_token');
         localStorage.removeItem('cnq_user');
+        localStorage.removeItem('cnq_stores');
+        localStorage.removeItem('cnq_active_store_id');
     };
 
     return {

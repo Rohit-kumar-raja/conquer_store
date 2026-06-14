@@ -30,6 +30,7 @@ import {
 } from 'lucide-vue-next';
 import { Button, Select, SurfaceCard } from '../../components';
 import { stockInService, type StockInDraft } from '../../services/stockInService';
+import { purchaseApi } from '../../services/purchaseApi';
 
 const route = useRoute();
 const router = useRouter();
@@ -547,6 +548,7 @@ const activeConfig = computed(() => configs[String(route.name)] ?? configs['inve
 const icon = computed(() => icons[activeConfig.value.key]);
 const searchQuery = ref('');
 const stockInDraft = ref<StockInDraft | null>(null);
+const backendRows = ref<Row[] | null>(null);
 const supplierOptions = [
     { name: 'Lumina Tech Logistics' },
     { name: 'Reliance Distribution' },
@@ -610,6 +612,7 @@ const displayedFields = computed(() => {
 });
 
 const displayedRows = computed(() => {
+    if (backendRows.value) return backendRows.value;
     if (!isStockInScreen.value || !stockInDraft.value) return activeConfig.value.rows;
 
     return stockInDraft.value.items.map((item) => ({
@@ -619,6 +622,40 @@ const displayedRows = computed(() => {
         status: stockInDraft.value?.status === 'received' ? 'Received' : 'Scanned'
     }));
 });
+
+const loadBackendRows = async () => {
+    try {
+        if (route.name === 'inventory-purchase-orders') {
+            const orders = await purchaseApi.getPurchaseOrders();
+            backendRows.value = orders.map((order) => ({
+                title: order.number,
+                meta: `${order.item_count} lines${order.expected_delivery_date ? ` • Due ${order.expected_delivery_date}` : ''}`,
+                value: formatCurrency(order.total),
+                status: order.status,
+            }));
+        } else if (route.name === 'inventory-goods-received') {
+            const receipts = await purchaseApi.getGoodsReceipts();
+            backendRows.value = receipts.map((receipt) => ({
+                title: receipt.number,
+                meta: `${receipt.item_count} lines • ${receipt.inspection_status}`,
+                value: `${receipt.received_qty} units`,
+                status: receipt.status,
+            }));
+        } else if (route.name === 'inventory-movements') {
+            const movements = await purchaseApi.getStockMovements();
+            backendRows.value = movements.map((movement) => ({
+                title: movement.item_name,
+                meta: `${movement.sku || 'No SKU'} • ${movement.reference_type}`,
+                value: movement.quantity_in > 0
+                    ? `+${movement.quantity_in}`
+                    : `-${movement.quantity_out}`,
+                status: movement.transaction_date || 'Posted',
+            }));
+        }
+    } catch {
+        backendRows.value = [];
+    }
+};
 
 const scanStockInBill = async () => {
     await router.push({ name: 'scanner', query: { mode: 'stock-in-bill' } });
@@ -649,6 +686,7 @@ const handleAction = async (action: Action) => {
 
 onMounted(async () => {
     stockInDraft.value = await stockInService.getDraft();
+    await loadBackendRows();
 });
 </script>
 

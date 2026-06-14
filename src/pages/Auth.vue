@@ -37,9 +37,9 @@ const onPhoneAutoVerified = (phone: string, isNewUser: boolean) => {
     }
 };
 
-const onRegistrationComplete = async (name: string, _businessName: string) => {
+const onRegistrationComplete = async (name: string, businessName: string) => {
     try {
-        await authStore.register(name, verifiedPhone.value);
+        await authStore.register(name, verifiedPhone.value, businessName);
         router.push({ name: 'dashboard' });
     } catch (e) {
         console.error('Registration failed:', e);

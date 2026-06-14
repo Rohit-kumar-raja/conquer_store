@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import {
     Search,
@@ -83,15 +83,20 @@ const getProgress = (stock: number, maxStock: number) => {
 };
 
 const showProgress = ref(false);
+const loadProducts = async () => {
+    const products = await productService.getProducts();
+    stockData.value = products.map(toStockItem);
+};
+
 onMounted(() => {
-    productService.getProducts().then((products) => {
-        stockData.value = products.map(toStockItem);
-    });
+    void loadProducts();
+    window.addEventListener('cnq:store-changed', loadProducts);
 
     setTimeout(() => {
         showProgress.value = true;
     }, 100);
 });
+onUnmounted(() => window.removeEventListener('cnq:store-changed', loadProducts));
 
 const getFilterClass = (filter: 'all' | 'out' | 'low') => {
     const active = selectedFilter.value === filter;

@@ -1,149 +1,252 @@
+import { apiRequest, getActiveStoreId } from './apiClient';
+
 export type ProductStockStatus = 'critical' | 'healthy' | 'out' | 'attention';
 
 export interface Product {
     id: string;
+    storeId: string;
     name: string;
     sku: string;
     image: string;
     stock: number;
     maxStock: number;
+    categoryId?: string;
     category: string;
+    brandId?: string;
     brand: string;
+    supplierId?: string;
     supplier: string;
     description: string;
     sellingPrice: number;
     status: ProductStockStatus;
+    barcode?: string;
     createdAt: string;
+}
+
+export interface ProductOption {
+    id: string;
+    name: string;
+    category_id?: string;
+}
+
+export interface ProductOptions {
+    categories: ProductOption[];
+    subcategories: ProductOption[];
+    brands: ProductOption[];
+    suppliers: ProductOption[];
+    units: ProductOption[];
+    warehouses: ProductOption[];
+    tracking_types: ProductOption[];
+    valuation_methods: ProductOption[];
 }
 
 export interface CreateProductInput {
     name: string;
     sku: string;
-    image?: string;
-    stock: number;
-    category: string;
-    brand: string;
-    supplier: string;
     description?: string;
+    categoryId?: string;
+    subcategoryId?: string;
+    brandId?: string;
+    supplierId?: string;
+    hsnCode?: string;
+    barcode?: string;
+    trackingType: string;
+    baseUomId?: string;
+    purchaseUomId?: string;
+    purchaseConversionRatio: number;
+    costPrice?: number;
+    mrp?: number;
     sellingPrice: number;
+    gstRate?: number;
+    leadTimeDays?: number;
+    reorderPoint?: number;
+    reorderQty?: number;
+    warehouseId?: string;
+    valuationMethod: string;
+    stock: number;
+    isPurchasable: boolean;
+    isSellable: boolean;
+    trackInventory: boolean;
+    allowNegativeStock: boolean;
 }
 
-const PRODUCT_STORAGE_KEY = 'cnq_products';
+interface ApiEnvelope<T> {
+    data: T;
+}
 
-const seedProducts: Product[] = [
-    {
-        id: '1',
-        name: 'Quantum Pulse X1',
-        sku: 'QPX-2024-RED',
-        image: 'https://picsum.photos/seed/shoe1/200/200',
-        stock: 12,
-        maxStock: 150,
-        category: 'Footwear',
-        brand: 'Quantum',
-        supplier: 'Reliance Distribution',
-        description: 'Lightweight daily footwear with breathable upper and cushioned sole.',
-        sellingPrice: 2499,
-        status: 'critical',
-        createdAt: new Date('2026-05-01').toISOString()
-    },
-    {
-        id: '2',
-        name: 'Aura Chronos Smart',
-        sku: 'AUR-WCH-SLV',
-        image: 'https://picsum.photos/seed/watch1/200/200',
-        stock: 412,
-        maxStock: 500,
-        category: 'Electronics',
-        brand: 'Aura',
-        supplier: 'Lumina Tech Logistics',
-        description: 'Smart wearable with health tracking, notifications and long battery life.',
-        sellingPrice: 24999,
-        status: 'healthy',
-        createdAt: new Date('2026-05-02').toISOString()
-    },
-    {
-        id: '3',
-        name: 'Sonic Boom ANC',
-        sku: 'SNB-HD-BLK',
-        image: 'https://picsum.photos/seed/audio1/200/200',
-        stock: 0,
-        maxStock: 200,
-        category: 'Audio',
-        brand: 'Sonic',
-        supplier: 'Bajaj Wholesale',
-        description: 'Wireless ANC headphones tuned for clear calls and deep bass.',
-        sellingPrice: 4999,
-        status: 'out',
-        createdAt: new Date('2026-05-03').toISOString()
-    },
-    {
-        id: '4',
-        name: 'Vortex Prime 85mm',
-        sku: 'VTX-LNS-85',
-        image: 'https://picsum.photos/seed/camera1/200/200',
-        stock: 45,
-        maxStock: 100,
-        category: 'Imaging',
-        brand: 'Vortex',
-        supplier: 'Metro Cash & Carry',
-        description: 'Portrait lens with fast focus and clean low-light performance.',
-        sellingPrice: 18999,
-        status: 'attention',
-        createdAt: new Date('2026-05-04').toISOString()
-    }
-];
+export interface ApiProduct {
+    id: string;
+    store_id: string;
+    name: string;
+    sku: string;
+    description?: string;
+    hsn_code?: string;
+    category_id?: string;
+    subcategory_id?: string;
+    category: string;
+    brand_id?: string;
+    brand: string;
+    supplier_id?: string;
+    supplier: string;
+    stock: number;
+    max_stock: number;
+    selling_price: number;
+    status: ProductStockStatus;
+    barcode?: string;
+    cost_price?: number;
+    mrp?: number;
+    gst_rate?: number;
+    reorder_point?: number;
+    reorder_qty?: number;
+    lead_time_days?: number;
+    tracking_type: string;
+    base_uom_id?: string;
+    purchase_uom_id?: string;
+    purchase_conversion_ratio: number;
+    default_warehouse_id?: string;
+    valuation_method: string;
+    is_purchasable: boolean;
+    is_sellable: boolean;
+    track_inventory: boolean;
+    allow_negative_stock: boolean;
+    created_at: string;
+}
 
-const getStatus = (stock: number, maxStock: number): ProductStockStatus => {
-    if (stock <= 0) return 'out';
-    if (stock <= Math.max(5, maxStock * 0.12)) return 'critical';
-    if (stock <= Math.max(15, maxStock * 0.35)) return 'attention';
-    return 'healthy';
-};
+const mapProduct = (product: ApiProduct): Product => ({
+    id: product.id,
+    storeId: product.store_id,
+    name: product.name,
+    sku: product.sku,
+    image: `https://picsum.photos/seed/${encodeURIComponent(product.sku)}/200/200`,
+    stock: product.stock,
+    maxStock: product.max_stock,
+    categoryId: product.category_id,
+    category: product.category,
+    brandId: product.brand_id,
+    brand: product.brand,
+    supplierId: product.supplier_id,
+    supplier: product.supplier,
+    description: product.description || 'No product description added.',
+    sellingPrice: product.selling_price,
+    status: product.status,
+    barcode: product.barcode,
+    createdAt: product.created_at,
+});
 
-const readProducts = (): Product[] => {
-    const storedValue = localStorage.getItem(PRODUCT_STORAGE_KEY);
-    if (!storedValue) return seedProducts;
-
-    try {
-        const parsed = JSON.parse(storedValue) as Product[];
-        return Array.isArray(parsed) ? parsed : seedProducts;
-    } catch {
-        return seedProducts;
-    }
-};
-
-const writeProducts = (products: Product[]) => {
-    localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(products));
-};
+const optionalNumber = (value?: number | null) =>
+    value === null || value === undefined || Number.isNaN(value) ? undefined : value;
 
 export const productService = {
     async getProducts(): Promise<Product[]> {
-        const products = readProducts();
-        writeProducts(products);
-        return products;
+        const storeId = getActiveStoreId();
+        const response = await apiRequest<ApiEnvelope<ApiProduct[]>>(
+            `/inventory/products?store_id=${encodeURIComponent(storeId)}`
+        );
+        return response.data.map(mapProduct);
+    },
+
+    async getProductOptions(): Promise<ProductOptions> {
+        const storeId = getActiveStoreId();
+        const response = await apiRequest<ApiEnvelope<ProductOptions>>(
+            `/inventory/product-options?store_id=${encodeURIComponent(storeId)}`
+        );
+        return response.data;
+    },
+
+    async createCategory(name: string): Promise<ProductOption> {
+        const response = await apiRequest<ApiEnvelope<ProductOption>>('/inventory/categories', {
+            method: 'POST',
+            body: JSON.stringify({
+                store_id: getActiveStoreId(),
+                name,
+            }),
+        });
+        return response.data;
+    },
+
+    async createBrand(name: string): Promise<ProductOption> {
+        const response = await apiRequest<ApiEnvelope<ProductOption>>('/inventory/brands', {
+            method: 'POST',
+            body: JSON.stringify({
+                store_id: getActiveStoreId(),
+                name,
+            }),
+        });
+        return response.data;
     },
 
     async createProduct(input: CreateProductInput): Promise<Product> {
-        const products = readProducts();
-        const maxStock = Math.max(100, input.stock);
-        const product: Product = {
-            id: String(Date.now()),
-            name: input.name,
-            sku: input.sku,
-            image: input.image || `https://picsum.photos/seed/${input.sku || Date.now()}/200/200`,
-            stock: input.stock,
-            maxStock,
-            category: input.category,
-            brand: input.brand,
-            supplier: input.supplier,
-            description: input.description?.trim() || 'No product description added.',
-            sellingPrice: input.sellingPrice,
-            status: getStatus(input.stock, maxStock),
-            createdAt: new Date().toISOString()
-        };
+        const response = await apiRequest<ApiEnvelope<ApiProduct>>('/inventory/products', {
+            method: 'POST',
+            body: JSON.stringify({
+                store_id: getActiveStoreId(),
+                name: input.name,
+                sku: input.sku,
+                description: input.description || null,
+                category_id: input.categoryId || null,
+                subcategory_id: input.subcategoryId || null,
+                brand_id: input.brandId || null,
+                preferred_supplier_id: input.supplierId || null,
+                hsn_code: input.hsnCode || null,
+                barcode: input.barcode || null,
+                tracking_type: input.trackingType,
+                base_uom_id: input.baseUomId || null,
+                purchase_uom_id: input.purchaseUomId || null,
+                purchase_conversion_ratio: input.purchaseConversionRatio,
+                cost_price: optionalNumber(input.costPrice),
+                mrp: optionalNumber(input.mrp),
+                selling_price: input.sellingPrice,
+                gst_rate: optionalNumber(input.gstRate),
+                lead_time_days: optionalNumber(input.leadTimeDays),
+                reorder_point: optionalNumber(input.reorderPoint),
+                reorder_qty: optionalNumber(input.reorderQty),
+                default_warehouse_id: input.warehouseId || null,
+                valuation_method: input.valuationMethod,
+                opening_stock: input.stock,
+                is_purchasable: input.isPurchasable,
+                is_sellable: input.isSellable,
+                track_inventory: input.trackInventory,
+                allow_negative_stock: input.allowNegativeStock,
+            }),
+        });
+        return mapProduct(response.data);
+    },
 
-        const withoutSameSku = products.filter((item) => item.sku !== product.sku);
-        writeProducts([product, ...withoutSameSku]);
-        return product;
-    }
+    async getProduct(id: string): Promise<ApiProduct> {
+        return (await apiRequest<ApiEnvelope<ApiProduct>>(`/inventory/products/${id}`)).data;
+    },
+
+    async updateProduct(id: string, input: Partial<CreateProductInput>): Promise<ApiProduct> {
+        const fieldMap: Record<string, unknown> = {};
+        const mappings: Array<[keyof CreateProductInput, string]> = [
+            ['name', 'name'], ['sku', 'sku'], ['description', 'description'],
+            ['categoryId', 'category_id'], ['subcategoryId', 'subcategory_id'],
+            ['brandId', 'brand_id'], ['supplierId', 'preferred_supplier_id'],
+            ['hsnCode', 'hsn_code'], ['barcode', 'barcode'],
+            ['trackingType', 'tracking_type'], ['baseUomId', 'base_uom_id'],
+            ['purchaseUomId', 'purchase_uom_id'],
+            ['purchaseConversionRatio', 'purchase_conversion_ratio'],
+            ['costPrice', 'cost_price'], ['mrp', 'mrp'],
+            ['sellingPrice', 'selling_price'], ['gstRate', 'gst_rate'],
+            ['leadTimeDays', 'lead_time_days'], ['reorderPoint', 'reorder_point'],
+            ['reorderQty', 'reorder_qty'], ['warehouseId', 'default_warehouse_id'],
+            ['valuationMethod', 'valuation_method'], ['stock', 'opening_stock'],
+            ['isPurchasable', 'is_purchasable'], ['isSellable', 'is_sellable'],
+            ['trackInventory', 'track_inventory'],
+            ['allowNegativeStock', 'allow_negative_stock'],
+        ];
+        for (const [source, target] of mappings) {
+            if (source in input) fieldMap[target] = input[source] ?? null;
+        }
+        return (
+            await apiRequest<ApiEnvelope<ApiProduct>>(`/inventory/products/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(fieldMap),
+            })
+        ).data;
+    },
+
+    async deleteProduct(id: string): Promise<void> {
+        await apiRequest<void>(`/inventory/products/${id}`, { method: 'DELETE' });
+    },
 };
