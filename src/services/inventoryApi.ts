@@ -1,24 +1,10 @@
 import { apiRequest, getActiveStoreId } from './apiClient';
 import type { BackendStore } from './authApi';
+import type { MasterCreateInput, MasterRecord, MasterType } from '../types/masterData';
 
 interface Envelope<T> {
     data: T;
 }
-
-export interface MasterRecord {
-    id: string;
-    store_id: string;
-    name: string;
-    code?: string;
-    description?: string;
-    contact_person?: string;
-    phone?: string;
-    email?: string;
-    gst_number?: string;
-    address?: string;
-}
-
-export type MasterType = 'categories' | 'brands' | 'suppliers';
 
 export const inventoryApi = {
     async getStores(): Promise<BackendStore[]> {
@@ -45,7 +31,7 @@ export const inventoryApi = {
 
     async create(
         type: MasterType,
-        data: Omit<MasterRecord, 'id' | 'store_id'>
+        data: MasterCreateInput
     ): Promise<MasterRecord> {
         return (
             await apiRequest<Envelope<MasterRecord>>(`/inventory/${type}`, {
@@ -58,7 +44,7 @@ export const inventoryApi = {
     async update(
         type: MasterType,
         id: string,
-        data: Partial<Omit<MasterRecord, 'id' | 'store_id'>>
+        data: Partial<MasterCreateInput>
     ): Promise<MasterRecord> {
         return (
             await apiRequest<Envelope<MasterRecord>>(`/inventory/${type}/${id}`, {

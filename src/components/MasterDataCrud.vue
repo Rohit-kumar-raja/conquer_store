@@ -3,9 +3,8 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import {
     inventoryApi,
-    type MasterRecord,
-    type MasterType,
 } from '../services/inventoryApi';
+import type { MasterRecord, MasterType } from '../types/masterData';
 
 const props = defineProps<{
     title: string;
