@@ -1,6 +1,7 @@
 import { apiRequest, getActiveStoreId } from './apiClient';
 import type {
     CreatePurchaseOrderInput,
+    CreatePurchaseRequisitionInput,
     GoodsReceiptSummary,
     PurchaseOrder,
     PurchaseRequisition,
@@ -24,6 +25,23 @@ const list = async <T>(path: string): Promise<T[]> => {
 export const purchaseApi = {
     getPurchaseOrders: () => list<PurchaseOrder>('purchase-orders'),
     getPurchaseRequisitions: () => list<PurchaseRequisition>('purchase-requisitions'),
+    async getSubmittedPurchaseRequisitions(): Promise<PurchaseRequisition[]> {
+        const storeId = getActiveStoreId();
+        return (
+            await apiRequest<Envelope<PurchaseRequisition[]>>(
+                `/inventory/purchase-requisitions?store_id=${encodeURIComponent(storeId)}&submitted_only=true`
+            )
+        ).data;
+    },
+    async createPurchaseRequisition(input: CreatePurchaseRequisitionInput): Promise<void> {
+        await apiRequest('/inventory/purchase-requisitions', {
+            method: 'POST',
+            body: JSON.stringify({ ...input, store_id: getActiveStoreId() }),
+        });
+    },
+    async submitPurchaseRequisition(id: string): Promise<void> {
+        await apiRequest(`/inventory/purchase-requisitions/${id}/submit`, { method: 'POST' });
+    },
     async getSettings(): Promise<PurchaseSettings> {
         const storeId = getActiveStoreId();
         return (

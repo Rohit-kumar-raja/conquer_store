@@ -47,8 +47,23 @@ export interface PurchaseRequisition {
     id: string;
     number: string;
     warehouse_id: string;
+    status: string;
     required_by?: string;
+    remarks?: string;
     items: PurchaseRequisitionItem[];
+}
+
+export interface CreatePurchaseRequisitionInput {
+    warehouse_id: string;
+    required_by?: string;
+    remarks?: string;
+    items: Array<{
+        item_name: string;
+        sku?: string;
+        unit_id?: string;
+        requested_qty: number;
+        remarks?: string;
+    }>;
 }
 
 export interface CreatePurchaseOrderInput {

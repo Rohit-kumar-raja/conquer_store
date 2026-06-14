@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import {
     User,
@@ -22,6 +23,7 @@ import {
     PackageMinus,
     History,
     ClipboardList,
+    ClipboardPenLine,
     ClipboardCheck,
     Barcode,
     CalendarClock,
@@ -39,17 +41,20 @@ import { SurfaceCard } from '../components';
 import { useShopStore } from '../stores/useShopStore';
 import { useThemeStore } from '../stores/useThemeStore';
 import { useAuthStore } from '../stores/useAuthStore';
+import { purchaseApi } from '../services/purchaseApi';
+import type { PurchaseOrderMode } from '../types/purchase';
 
 const router = useRouter();
 const shopStore = useShopStore();
 const themeStore = useThemeStore();
 const authStore = useAuthStore();
+const purchaseMode = ref<PurchaseOrderMode>('direct');
 
 const menuItems = [
+    { id: 'settings', icon: Settings, label: 'Store Settings', sub: 'Taxes, currency & branding', color: 'bg-secondary/10 text-secondary' },
     { id: 'profile', icon: User, label: 'Owner Profile', sub: 'Account & business details', color: 'bg-primary/10 text-primary' },
     { id: 'subscription', icon: CreditCard, label: 'Subscription', sub: 'Plan, billing and usage', color: 'bg-tertiary/10 text-tertiary' },
     { id: 'bill-history', icon: History, label: 'Bill History', sub: 'Finalized bills and receipts', color: 'bg-primary/10 text-primary' },
-    { id: 'settings', icon: Settings, label: 'Store Settings', sub: 'Taxes, currency & branding', color: 'bg-secondary/10 text-secondary' },
     { id: 'security', icon: Shield, label: 'Security & Access', sub: 'Staff permissions & login', color: 'bg-primary/10 text-primary' },
     { id: 'notifications-settings', icon: Bell, label: 'Notifications', sub: 'Alerts & report preferences', color: 'bg-tertiary/10 text-tertiary' },
     { id: 'support', icon: HelpCircle, label: 'Help & Support', sub: 'Docs, chat & feedback', color: 'bg-secondary/10 text-secondary' },
@@ -62,7 +67,7 @@ const masterDataItems = [
     { id: 'master-customers', icon: Users, label: 'Customers', sub: 'Customer directory', color: 'bg-primary/10 text-primary' },
 ];
 
-const inventoryItems = [
+const baseInventoryItems = [
     { id: 'inventory-stock-in', icon: PackagePlus, label: 'Stock In', sub: 'Receive supplier stock', color: 'bg-primary/10 text-primary' },
     { id: 'inventory-stock-out', icon: PackageMinus, label: 'Stock Out', sub: 'Damage, loss and correction', color: 'bg-error/10 text-error' },
     { id: 'inventory-movements', icon: History, label: 'Movement History', sub: 'Complete stock audit trail', color: 'bg-secondary/10 text-secondary' },
@@ -81,6 +86,19 @@ const inventoryItems = [
     { id: 'inventory-reorder-rules', icon: SlidersHorizontal, label: 'Reorder Rules', sub: 'Min, max and auto alerts', color: 'bg-primary/10 text-primary' },
     { id: 'inventory-import-export', icon: FileSpreadsheet, label: 'Import / Export', sub: 'Bulk upload and reports', color: 'bg-secondary/10 text-secondary' },
 ];
+
+const inventoryItems = computed(() => {
+    const items = [...baseInventoryItems];
+    if (purchaseMode.value !== 'direct') {
+        const purchaseOrderIndex = items.findIndex((item) => item.id === 'inventory-purchase-orders');
+        items.splice(purchaseOrderIndex, 0, { id: 'inventory-purchase-requisitions', icon: ClipboardPenLine, label: 'Purchase Requisitions', sub: 'Request stock before purchase orders', color: 'bg-primary/10 text-primary' });
+    }
+    return items;
+});
+
+onMounted(async () => {
+    try { purchaseMode.value = (await purchaseApi.getSettings()).purchase_order_mode; } catch { purchaseMode.value = 'direct'; }
+});
 
 const navigateTo = (routeName: string) => {
     router.push({ name: routeName });
@@ -114,7 +132,8 @@ const handleLogout = () => {
                                     <h3 class="font-black text-xl tracking-tight truncate">
                                         {{ shopStore.selectedShop.name }}
                                     </h3>
-                                    <div class="flex items-center gap-1 bg-white text-primary px-2 py-0.5 rounded-lg shrink-0">
+                                    <div
+                                        class="flex items-center gap-1 bg-white text-primary px-2 py-0.5 rounded-lg shrink-0">
                                         <Crown class="w-3 h-3" />
                                         <span class="text-[8px] font-black uppercase tracking-wider">Pro</span>
                                     </div>
@@ -137,17 +156,20 @@ const handleLogout = () => {
                     <button @click="shopStore.toggleSwitcher"
                         class="p-4 flex flex-col items-center gap-1.5 active:bg-surface-container-high/40 transition-all">
                         <Store class="w-5 h-5 text-primary" />
-                        <span class="text-[8px] font-black text-on-surface-variant/45 uppercase tracking-wider">Switch</span>
+                        <span
+                            class="text-[8px] font-black text-on-surface-variant/45 uppercase tracking-wider">Switch</span>
                     </button>
                     <button @click="navigateTo('subscription')"
                         class="p-4 flex flex-col items-center gap-1.5 active:bg-surface-container-high/40 transition-all">
                         <CreditCard class="w-5 h-5 text-tertiary" />
-                        <span class="text-[8px] font-black text-on-surface-variant/45 uppercase tracking-wider">Billing</span>
+                        <span
+                            class="text-[8px] font-black text-on-surface-variant/45 uppercase tracking-wider">Billing</span>
                     </button>
                     <button @click="navigateTo('security')"
                         class="p-4 flex flex-col items-center gap-1.5 active:bg-surface-container-high/40 transition-all">
                         <Shield class="w-5 h-5 text-secondary" />
-                        <span class="text-[8px] font-black text-on-surface-variant/45 uppercase tracking-wider">Access</span>
+                        <span
+                            class="text-[8px] font-black text-on-surface-variant/45 uppercase tracking-wider">Access</span>
                     </button>
                 </div>
             </SurfaceCard>
@@ -198,7 +220,8 @@ const handleLogout = () => {
                         </div>
                         <div class="min-w-0">
                             <h3 class="font-black text-on-surface text-sm leading-tight truncate">{{ item.label }}</h3>
-                            <p class="text-[10px] font-bold text-on-surface-variant/40 mt-0.5 truncate">{{ item.sub }}</p>
+                            <p class="text-[10px] font-bold text-on-surface-variant/40 mt-0.5 truncate">{{ item.sub }}
+                            </p>
                         </div>
                     </div>
                     <ChevronRight

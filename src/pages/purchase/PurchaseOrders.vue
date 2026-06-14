@@ -38,7 +38,7 @@ const filteredOrders = computed(() => {
 const load = async () => {
     loading.value = true; error.value = '';
     try {
-        const [orderData, settings, optionData, productData, requisitionData] = await Promise.all([purchaseApi.getPurchaseOrders(), purchaseApi.getSettings(), productService.getProductOptions(), productService.getProducts(), purchaseApi.getPurchaseRequisitions()]);
+        const [orderData, settings, optionData, productData, requisitionData] = await Promise.all([purchaseApi.getPurchaseOrders(), purchaseApi.getSettings(), productService.getProductOptions(), productService.getProducts(), purchaseApi.getSubmittedPurchaseRequisitions()]);
         orders.value = orderData; mode.value = settings.purchase_order_mode; options.value = optionData; products.value = productData; requisitions.value = requisitionData;
     } catch (cause) { error.value = cause instanceof Error ? cause.message : 'Unable to load purchase orders.'; }
     finally { loading.value = false; }
