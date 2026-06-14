@@ -25,6 +25,15 @@ export const inventoryApi = {
         return (await apiRequest<Envelope<BackendStore[]>>('/inventory/stores')).data;
     },
 
+    async createStore(data: { name: string; code?: string; city?: string }): Promise<BackendStore> {
+        return (
+            await apiRequest<Envelope<BackendStore>>('/inventory/stores', {
+                method: 'POST',
+                body: JSON.stringify(data),
+            })
+        ).data;
+    },
+
     async list(type: MasterType): Promise<MasterRecord[]> {
         const storeId = getActiveStoreId();
         return (

@@ -12,6 +12,8 @@ export interface User {
     id: string;
     name: string;
     phone: string;
+    email?: string;
+    avatar?: string;
     uid?: string;
 }
 
@@ -186,6 +188,12 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.removeItem('cnq_active_store_id');
     };
 
+    const updateStoredUser = (data: Partial<User>) => {
+        if (!user.value) return;
+        user.value = { ...user.value, ...data };
+        localStorage.setItem('cnq_user', JSON.stringify(user.value));
+    };
+
     return {
         user,
         token,
@@ -196,6 +204,7 @@ export const useAuthStore = defineStore('auth', () => {
         verifyOtp,
         register,
         clearPendingRegistration,
+        updateStoredUser,
         logout,
     };
 });

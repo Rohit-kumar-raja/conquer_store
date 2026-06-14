@@ -4,6 +4,7 @@ export interface BackendStore {
     id: string;
     name: string;
     code: string;
+    city?: string | null;
     is_default: boolean;
 }
 

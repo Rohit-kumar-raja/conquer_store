@@ -17,7 +17,7 @@ const readStoredShops = (): Shop[] => {
         return (JSON.parse(value) as BackendStore[]).map((store) => ({
             ...store,
             branch: store.code,
-            location: 'Backend store',
+            location: store.city || 'Location not set',
         }));
     } catch {
         return [];
@@ -50,7 +50,7 @@ export const useShopStore = defineStore('shop', () => {
             shops.value = (await inventoryApi.getStores()).map((store) => ({
                 ...store,
                 branch: store.code,
-                location: 'Backend store',
+                location: store.city || 'Location not set',
             }));
             const selected = shops.value.find((store) => store.id === selectedStoreId.value)
                 || shops.value.find((store) => store.is_default)
@@ -63,6 +63,19 @@ export const useShopStore = defineStore('shop', () => {
         } finally {
             loading.value = false;
         }
+    };
+
+    const createShop = async (data: { name: string; code?: string; city?: string }) => {
+        const store = await inventoryApi.createStore(data);
+        const shop: Shop = {
+            ...store,
+            branch: store.code,
+            location: store.city || data.city?.trim() || 'Location not set',
+        };
+        shops.value.push(shop);
+        localStorage.setItem('cnq_stores', JSON.stringify(shops.value));
+        switchShop(shop);
+        return shop;
     };
 
     const switchShop = (shop: Shop) => {
@@ -84,6 +97,7 @@ export const useShopStore = defineStore('shop', () => {
         isSwitcherOpen,
         loading,
         loadStores,
+        createShop,
         switchShop,
         toggleSwitcher: () => { isSwitcherOpen.value = !isSwitcherOpen.value; },
     };
